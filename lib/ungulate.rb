@@ -5,9 +5,6 @@ module Ungulate
     def run
       job = Job.pop
     end
-
-    def pop_job
-    end
   end
 
   class Job
