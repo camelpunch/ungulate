@@ -14,6 +14,12 @@ module Ungulate
   class Job
     attr_accessor :bucket, :key
 
+    def self.queue
+      @queue ||= RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                                       ENV['AMAZON_SECRET_ACCESS_KEY']).
+                                       queue(ENV['QUEUE'])
+    end
+
     def self.pop
       job = new
       message = queue.pop
@@ -22,12 +28,6 @@ module Ungulate
       job.key = job_attributes[:key]
 
       job
-    end
-
-    def self.queue
-      @queue ||= RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                                       ENV['AMAZON_SECRET_ACCESS_KEY']).
-                                       queue(ENV['QUEUE'])
     end
   end
 end
