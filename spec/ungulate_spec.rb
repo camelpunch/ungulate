@@ -48,13 +48,14 @@ module Ungulate
 
     describe :pop do
       before do
+        @versions = {
+          :thumb => [ :resize_to_fit, 100, 200 ],
+          :large => [ :resize_to_fit, 200, 300 ],
+        }
         @job_attributes = {
           :bucket => 'test-bucket', 
           :key => 'test-key', 
-          :versions => {
-            :thumb => [ :resize_to_fit, 100, 200 ],
-            :large => [ :resize_to_fit, 200, 300 ],
-          }
+          :versions => @versions
         }
 
         @message = mock('Message', :read => @job_attributes.to_yaml)
@@ -73,6 +74,7 @@ module Ungulate
       it { should be_a(Job) }
       its(:bucket) { should == @bucket }
       its(:key) { should == @job_attributes[:key] }
+      its(:versions) { should == @versions }
     end
 
     describe :queue do
@@ -114,8 +116,29 @@ module Ungulate
     end
 
     describe :process do
-      it "should load the source into an image"
-      it "should loop through versions, storing new versions in memory" 
+      subject do
+        job = Job.new
+        versions = {
+          :large => [ :resize_to_fit, 100, 200 ],
+          :small => [ :resize_to_fill, 64, 64 ],
+        }
+        job.stub(:versions).and_return(versions)
+        job.stub(:key).and_return('someimage.jpg')
+
+        job.stub(:source).and_return(:data)
+        @source_image = mock('Image')
+        Magick::Image.stub(:from_blob).with(:data).and_return([@source_image])
+
+        @source_image.stub(:resize_to_fit).with(100, 200).and_return(@large)
+        @source_image.stub(:resize_to_fill).with(64, 64).and_return(@small)
+
+        job.process
+        job
+      end
+
+        #job.bucket.should_receive(:put).with('someimage_large.jpg', @large)
+
+      its(:processed_versions) { should == { :large => @large, :small => @small } }
     end
 
     describe :store do

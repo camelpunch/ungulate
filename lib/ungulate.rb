@@ -12,7 +12,7 @@ module Ungulate
   end
 
   class Job
-    attr_accessor :bucket, :key
+    attr_accessor :bucket, :key, :processed_versions, :versions
 
     def self.queue
       @queue ||= RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
@@ -30,8 +30,20 @@ module Ungulate
       
       job.bucket = s3.bucket(job_attributes[:bucket])
       job.key = job_attributes[:key]
+      job.versions = job_attributes[:versions]
 
       job
+    end
+
+    def process
+      self.processed_versions = {}
+
+      versions.each_pair do |name, instruction|
+        method, x, y = instruction
+
+        image = Magick::Image.from_blob(source).first
+        self.processed_versions[name] = image.send(method, x, y)
+      end
     end
 
     def source
