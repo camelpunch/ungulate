@@ -40,6 +40,12 @@ module Ungulate
   end
 
   describe Job do
+    before do
+      ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
+      ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
+      ENV['QUEUE'] = 'test-queue'
+    end
+
     describe :pop do
       before do
         @job_attributes = {
@@ -55,21 +61,22 @@ module Ungulate
         @q = mock('Queue')
         @q.stub(:pop).and_return(@message)
         Job.stub(:queue).and_return(@q)
+
+        @s3 = mock('S3')
+        RightAws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
+        @bucket = mock('Bucket')
+        @s3.stub(:bucket).with('test-bucket').and_return(@bucket)
       end
 
       subject { Job.pop }
 
       it { should be_a(Job) }
-      its(:bucket) { should == @job_attributes[:bucket] }
+      its(:bucket) { should == @bucket }
       its(:key) { should == @job_attributes[:key] }
     end
 
     describe :queue do
       before do
-        ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
-        ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
-        ENV['QUEUE'] = 'test-queue'
-
         @q = mock('Queue')
         @sqs = mock('Sqs')
         @sqs.stub(:queue).with('test-queue').and_return(@q)
@@ -94,7 +101,16 @@ module Ungulate
     end
 
     describe :source do
-      it "should return the retrieved data"
+      subject do
+        job = Job.new
+        job.stub(:key).and_return('test-key')
+        job.stub_chain(:bucket, :get).with('test-key').and_return(:data)
+        job
+      end
+
+      it "should return data from S3" do
+        subject.source.should == :data
+      end
     end
 
     describe :process do

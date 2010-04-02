@@ -24,10 +24,18 @@ module Ungulate
       job = new
       message = queue.pop
       job_attributes = YAML.load message
-      job.bucket = job_attributes[:bucket]
+
+      s3 = RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                            ENV['AMAZON_SECRET_ACCESS_KEY'])
+      
+      job.bucket = s3.bucket(job_attributes[:bucket])
       job.key = job_attributes[:key]
 
       job
+    end
+
+    def source
+      bucket.get key
     end
   end
 end
