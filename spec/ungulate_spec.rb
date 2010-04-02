@@ -1,6 +1,22 @@
 require File.expand_path(File.dirname(__FILE__) + '/spec_helper')
 
 module Ungulate
+  describe Runner do
+    before do
+      @job = mock('Ungulate::Job')
+
+      Ungulate::Job.stub(:pop).and_return(@job)
+    end
+
+    describe "run" do
+      after { subject.run }
+
+      it "should pop a job" do
+        Ungulate::Job.should_receive(:pop)
+      end
+    end
+  end
+
   describe Job do
     describe :pop do
       before do
@@ -52,22 +68,6 @@ module Ungulate
           RightAws::SqsGen2.should_not_receive(:new)
           Job.queue
         end
-      end
-    end
-  end
-
-  describe Runner do
-    before do
-      @job = mock('Ungulate::Job')
-
-      Ungulate::Job.stub(:pop).and_return(@job)
-    end
-
-    describe "run" do
-      after { subject.run }
-
-      it "should pop a job" do
-        Ungulate::Job.should_receive(:pop)
       end
     end
   end
