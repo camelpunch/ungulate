@@ -1,9 +1,13 @@
 require 'rubygems'
 require 'right_aws'
+require 'RMagick'
+
 module Ungulate
   class Runner
     def run
       job = Job.pop
+      job.process
+      job.store
     end
   end
 
