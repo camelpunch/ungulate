@@ -43,8 +43,20 @@ module Ungulate
     before do
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
       ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
-      ENV['QUEUE'] = 'test-queue'
       @bucket = mock('Bucket')
+      @sqs = mock('SqsGen2')
+      @s3 = mock('S3')
+      @q = mock('Queue')
+    end
+
+    describe :sqs do
+      before do
+        RightAws::SqsGen2.stub(:new).with('test-key-id', 'test-secret').and_return(@sqs)
+      end
+
+      it "should return a SqsGen2 instance using environment variables" do
+        Job.sqs.should == @sqs
+      end
     end
 
     describe :pop do
@@ -60,45 +72,31 @@ module Ungulate
         }
 
         @message = mock('Message', :read => @job_attributes.to_yaml)
-        @q = mock('Queue')
         @q.stub(:pop).and_return(@message)
-        Job.stub(:queue).and_return(@q)
 
-        @s3 = mock('S3')
+        @sqs.stub(:queue).with('test-queue').and_return(@q)
+        Job.stub(:sqs).and_return(@sqs)
+
         RightAws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
         @s3.stub(:bucket).with('test-bucket').and_return(@bucket)
       end
 
-      subject { Job.pop }
+      subject { Job.pop('test-queue') }
 
       it { should be_a(Job) }
       its(:bucket) { should == @bucket }
       its(:key) { should == @job_attributes[:key] }
+      its(:queue) { should == @q }
       its(:versions) { should == @versions }
     end
 
-    describe :queue do
+    describe :s3 do
       before do
-        @q = mock('Queue')
-        @sqs = mock('Sqs')
-        @sqs.stub(:queue).with('test-queue').and_return(@q)
-
-        RightAws::SqsGen2.stub(:new).with('test-key-id', 'test-secret').and_return(@sqs)
+        RightAws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
       end
 
-      subject { Job.queue }
-
-      it { should == @q }
-
-      describe "when already called" do
-        before do
-          Job.instance_variable_set('@queue', @q)
-        end
-
-        it "should not instantiate afresh" do
-          RightAws::SqsGen2.should_not_receive(:new)
-          Job.queue
-        end
+      it "should return a S3 instance using environment variables" do
+        Job.s3.should == @s3
       end
     end
 

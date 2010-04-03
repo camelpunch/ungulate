@@ -12,22 +12,26 @@ module Ungulate
   end
 
   class Job
-    attr_accessor :bucket, :key, :processed_versions, :versions
+    attr_accessor :bucket, :key, :processed_versions, :queue, :versions
 
-    def self.queue
-      @queue ||= RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                                       ENV['AMAZON_SECRET_ACCESS_KEY']).
-                                       queue(ENV['QUEUE'])
+    def self.s3
+      RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                       ENV['AMAZON_SECRET_ACCESS_KEY'])
+      
     end
 
-    def self.pop
+    def self.sqs
+      RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                            ENV['AMAZON_SECRET_ACCESS_KEY'])
+    end
+
+    def self.pop(queue_name)
       job = new
-      message = queue.pop
+      job.queue = sqs.queue queue_name
+      message = job.queue.pop
+
       job_attributes = YAML.load message
 
-      s3 = RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                            ENV['AMAZON_SECRET_ACCESS_KEY'])
-      
       job.bucket = s3.bucket(job_attributes[:bucket])
       job.key = job_attributes[:key]
       job.versions = job_attributes[:versions]
