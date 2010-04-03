@@ -5,14 +5,12 @@ require 'RMagick'
 module Ungulate
   class Runner
     def run
-      job = Job.pop
-      job.process
-      job.store
+      Job.pop.process
     end
   end
 
   class Job
-    attr_accessor :bucket, :key, :processed_versions, :queue, :versions
+    attr_accessor :bucket, :key, :queue, :versions
 
     def self.s3
       RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
@@ -40,14 +38,11 @@ module Ungulate
       self.versions = options[:versions]
     end
 
-    def process
-      self.processed_versions = {}
-
-      versions.each_pair do |name, instruction|
+    def processed_versions
+      versions.map do |name, instruction|
         method, x, y = instruction
-
         image = Magick::Image.from_blob(source).first
-        self.processed_versions[name] = image.send(method, x, y)
+        [name, image.send(method, x, y)]
       end
     end
 
@@ -55,7 +50,7 @@ module Ungulate
       bucket.get key
     end
 
-    def store
+    def process
       processed_versions.each_pair do |version, image|
         bucket.put(version_key(version), image.to_blob)
       end

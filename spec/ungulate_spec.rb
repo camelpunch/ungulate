@@ -32,9 +32,8 @@ module Ungulate
         Job.should_receive(:pop)
       end
 
-      it "should process the job and store the results" do
-        @job.should_receive(:process).ordered
-        @job.should_receive(:store).ordered
+      it "should process the job" do
+        @job.should_receive(:process)
       end
     end
   end
@@ -133,7 +132,7 @@ module Ungulate
       it { should == :s3_data }
     end
 
-    describe :process do
+    describe :processed_versions do
       subject do
         job = Job.new
         versions = {
@@ -147,17 +146,17 @@ module Ungulate
         @source_image = mock('Image')
         Magick::Image.stub(:from_blob).with(:data).and_return([@source_image])
 
-        @source_image.stub(:resize_to_fit).with(100, 200).and_return(@large)
-        @source_image.stub(:resize_to_fill).with(64, 64).and_return(@small)
+        @source_image.stub(:resize_to_fit).with(100, 200).and_return(:large_image)
+        @source_image.stub(:resize_to_fill).with(64, 64).and_return(:small_image)
 
-        job.process
-        job
+        job.processed_versions
       end
 
-      its(:processed_versions) { should == { :large => @large, :small => @small } }
+      it { should include([:large, :large_image]) }
+      it { should include([:small, :small_image]) }
     end
 
-    describe :store do
+    describe :process do
       subject do
         job = Job.new
         @big = mock('Image', :to_blob => 'bigdata')
@@ -169,7 +168,7 @@ module Ungulate
         job
       end
 
-      after { subject.store }
+      after { subject.process }
 
       it "should send each processed version to S3" do
         @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 'bigdata')
