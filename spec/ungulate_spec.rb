@@ -47,6 +47,10 @@ module Ungulate
       @sqs = mock('SqsGen2')
       @s3 = mock('S3')
       @q = mock('Queue')
+      @versions = {
+        :thumb => [ :resize_to_fit, 100, 200 ],
+        :large => [ :resize_to_fit, 200, 300 ],
+      }
     end
 
     describe :sqs do
@@ -61,33 +65,33 @@ module Ungulate
 
     describe :pop do
       before do
-        @versions = {
-          :thumb => [ :resize_to_fit, 100, 200 ],
-          :large => [ :resize_to_fit, 200, 300 ],
-        }
         @job_attributes = {
           :bucket => 'test-bucket', 
           :key => 'test-key', 
           :versions => @versions
         }
 
-        @message = mock('Message', :read => @job_attributes.to_yaml)
-        @q.stub(:pop).and_return(@message)
-
         @sqs.stub(:queue).with('test-queue').and_return(@q)
-        Job.stub(:sqs).and_return(@sqs)
 
-        RightAws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
-        @s3.stub(:bucket).with('test-bucket').and_return(@bucket)
+        @q.stub(:pop).and_return(:message)
+        YAML.stub(:load).with(:message).and_return(:attributes)
+
+        Job.stub(:sqs).and_return(@sqs)
+        Job.stub(:s3).and_return(@s3)
+
+        @job = mock('Job', :attributes= => nil, :queue= => nil, :queue => @q)
+        Job.stub(:new).and_return(@job)
       end
 
-      subject { Job.pop('test-queue') }
+      after { Job.pop('test-queue') }
 
-      it { should be_a(Job) }
-      its(:bucket) { should == @bucket }
-      its(:key) { should == @job_attributes[:key] }
-      its(:queue) { should == @q }
-      its(:versions) { should == @versions }
+      it "should set attributes" do
+        @job.should_receive(:attributes=).with(:attributes)
+      end
+
+      it "should set the queue" do
+        @job.should_receive(:queue=).with(@q)
+      end
     end
 
     describe :s3 do
@@ -100,17 +104,33 @@ module Ungulate
       end
     end
 
+    describe :attributes= do
+      subject do
+        Job.stub_chain(:s3, :bucket).with('hello').and_return(@bucket)
+
+        job = Job.new
+        job.attributes = { 
+          :bucket => 'hello', 
+          :key => 'path/to/filename.gif', 
+          :versions => @versions
+        }
+        job
+      end
+
+      its(:bucket) { should == @bucket }
+      its(:key) { should == 'path/to/filename.gif' }
+      its(:versions) { should == @versions }
+    end
+
     describe :source do
       subject do
         job = Job.new
         job.stub(:key).and_return('test-key')
-        job.stub_chain(:bucket, :get).with('test-key').and_return(:data)
-        job
+        job.stub_chain(:bucket, :get).with('test-key').and_return(:s3_data)
+        job.source
       end
 
-      it "should return data from S3" do
-        subject.source.should == :data
-      end
+      it { should == :s3_data }
     end
 
     describe :process do
@@ -133,8 +153,6 @@ module Ungulate
         job.process
         job
       end
-
-        #job.bucket.should_receive(:put).with('someimage_large.jpg', @large)
 
       its(:processed_versions) { should == { :large => @large, :small => @small } }
     end
@@ -163,12 +181,10 @@ module Ungulate
       subject do
         job = Job.new
         job.stub(:key).and_return('path/to/some/file_name.png')
-        job
+        job.version_key(:extra_large)
       end
 
-      it "should put the version before the extension" do
-        subject.version_key(:extra_large).should == 'path/to/some/file_name_extra_large.png'
-      end
+      it { should == 'path/to/some/file_name_extra_large.png' }
     end
   end
 end

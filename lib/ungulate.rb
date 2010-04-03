@@ -30,13 +30,14 @@ module Ungulate
       job.queue = sqs.queue queue_name
       message = job.queue.pop
 
-      job_attributes = YAML.load message
-
-      job.bucket = s3.bucket(job_attributes[:bucket])
-      job.key = job_attributes[:key]
-      job.versions = job_attributes[:versions]
-
+      job.attributes = YAML.load message
       job
+    end
+
+    def attributes=(options)
+      self.bucket = Job.s3.bucket(options[:bucket])
+      self.key = options[:key]
+      self.versions = options[:versions]
     end
 
     def process
