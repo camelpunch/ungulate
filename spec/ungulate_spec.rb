@@ -50,6 +50,8 @@ module Ungulate
       }
     end
 
+    its(:versions) { should == [] }
+
     describe :sqs do
       before do
         RightAws::SqsGen2.stub(:new).with('test-key-id', 'test-secret').and_return(@sqs)
@@ -70,8 +72,10 @@ module Ungulate
 
         @sqs.stub(:queue).with('test-queue').and_return(@q)
 
-        @q.stub(:pop).and_return(:message)
-        YAML.stub(:load).with(:message).and_return(:attributes)
+        message = mock('Message', :to_s => :message_data)
+
+        @q.stub(:pop).and_return(message)
+        YAML.stub(:load).with(:message_data).and_return(:attributes)
 
         Job.stub(:sqs).and_return(@sqs)
         Job.stub(:s3).and_return(@s3)
@@ -88,6 +92,16 @@ module Ungulate
 
       it "should set the queue" do
         @job.should_receive(:queue=).with(@q)
+      end
+
+      context "when YAML.load returns false" do
+        before do
+          YAML.stub(:load).with(:message_data).and_return(false)
+        end
+
+        it "should not set attributes" do
+          @job.should_not_receive(:attributes=)
+        end
       end
     end
 
@@ -171,6 +185,15 @@ module Ungulate
       it "should send each processed version to S3" do
         @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 'bigdata')
         @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 'littledata')
+      end
+
+      context "empty array" do
+        before do
+          subject.stub(:processed_versions).and_return([])
+        end
+
+        it "should not break" do
+        end
       end
     end
 

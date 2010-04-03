@@ -25,9 +25,13 @@ module Ungulate
       job = new
       job.queue = sqs.queue queue_name
       message = job.queue.pop
-
-      job.attributes = YAML.load message
+      attributes = YAML.load message.to_s
+      job.attributes = attributes if attributes
       job
+    end
+
+    def initialize
+      self.versions = []
     end
 
     def attributes=(options)
@@ -49,6 +53,7 @@ module Ungulate
     end
 
     def process
+      return false if processed_versions.empty?
       processed_versions.each_pair do |version, image|
         bucket.put(version_key(version), image.to_blob)
       end
