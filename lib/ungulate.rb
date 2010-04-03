@@ -3,10 +3,8 @@ require 'right_aws'
 require 'RMagick'
 
 module Ungulate
-  class Runner
-    def run
-      Job.pop.process
-    end
+  def self.run(queue_name)
+    Job.pop(queue_name).process
   end
 
   class Job
