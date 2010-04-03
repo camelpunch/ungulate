@@ -13,7 +13,6 @@ module Ungulate
     def self.s3
       RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
                        ENV['AMAZON_SECRET_ACCESS_KEY'])
-      
     end
 
     def self.sqs
