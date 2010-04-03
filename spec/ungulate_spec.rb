@@ -160,5 +160,17 @@ module Ungulate
         @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 'littledata')
       end
     end
+
+    describe :version_key do
+      subject do
+        job = Job.new
+        job.stub(:key).and_return('path/to/some/file_name.png')
+        job
+      end
+
+      it "should put the version before the extension" do
+        subject.version_key(:extra_large).should == 'path/to/some/file_name_extra_large.png'
+      end
+    end
   end
 end

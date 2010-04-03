@@ -55,5 +55,12 @@ module Ungulate
         bucket.put(version_key(version), image.to_blob)
       end
     end
+
+    def version_key(version)
+      dirname = File.dirname(key)
+      extname = File.extname(key)
+      basename = File.basename(key, extname)
+      "#{dirname}/#{basename}_#{version}#{extname}"
+    end
   end
 end
