@@ -44,6 +44,7 @@ module Ungulate
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
       ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
       ENV['QUEUE'] = 'test-queue'
+      @bucket = mock('Bucket')
     end
 
     describe :pop do
@@ -65,7 +66,6 @@ module Ungulate
 
         @s3 = mock('S3')
         RightAws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
-        @bucket = mock('Bucket')
         @s3.stub(:bucket).with('test-bucket').and_return(@bucket)
       end
 
@@ -142,7 +142,23 @@ module Ungulate
     end
 
     describe :store do
-      it "should send each processed version to S3"
+      subject do
+        job = Job.new
+        @big = mock('Image', :to_blob => 'bigdata')
+        @little = mock('Image', :to_blob => 'littledata')
+        job.stub(:processed_versions).and_return(:big => @big, :little => @little)
+        job.stub(:bucket).and_return(@bucket)
+        job.stub(:version_key).with(:big).and_return('path/to/someimage_big.jpg')
+        job.stub(:version_key).with(:little).and_return('path/to/someimage_little.jpg')
+        job
+      end
+
+      after { subject.store }
+
+      it "should send each processed version to S3" do
+        @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 'bigdata')
+        @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 'littledata')
+      end
     end
   end
 end

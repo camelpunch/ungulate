@@ -49,5 +49,11 @@ module Ungulate
     def source
       bucket.get key
     end
+
+    def store
+      processed_versions.each_pair do |version, image|
+        bucket.put(version_key(version), image.to_blob)
+      end
+    end
   end
 end
