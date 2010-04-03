@@ -10,13 +10,13 @@ module Ungulate
         }
 
         @data = mock('Data')
-        @job = mock('Ungulate::Job', 
+        @job = mock('Job', 
                     :versions => @versions,
                     :source => @data,
                     :process => nil,
                     :store => nil)
 
-        Ungulate::Job.stub(:pop).and_return(@job)
+        Job.stub(:pop).and_return(@job)
 
         @image = mock('RMagick::Image')
 
@@ -29,7 +29,7 @@ module Ungulate
       after { subject.run }
 
       it "should pop a job" do
-        Ungulate::Job.should_receive(:pop)
+        Job.should_receive(:pop)
       end
 
       it "should process the job and store the results" do
