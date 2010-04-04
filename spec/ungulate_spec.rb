@@ -205,6 +205,16 @@ module Ungulate
       end
 
       it { should == 'path/to/some/file_name_extra_large.png' }
+
+      context "no leading path" do
+        subject do
+          job = Job.new
+          job.stub(:key).and_return('file_name.png')
+          job.version_key(:extra_large)
+        end
+
+        it { should == 'file_name_extra_large.png' }
+      end
     end
   end
 end

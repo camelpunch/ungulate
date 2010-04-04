@@ -62,7 +62,7 @@ module Ungulate
       dirname = File.dirname(key)
       extname = File.extname(key)
       basename = File.basename(key, extname)
-      "#{dirname}/#{basename}_#{version}#{extname}"
+      "#{dirname}/#{basename}_#{version}#{extname}".sub(/^\.\//, '')
     end
   end
 end
