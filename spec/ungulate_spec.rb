@@ -173,7 +173,7 @@ module Ungulate
         job = Job.new
         @big = mock('Image', :to_blob => 'bigdata')
         @little = mock('Image', :to_blob => 'littledata')
-        job.stub(:processed_versions).and_return(:big => @big, :little => @little)
+        job.stub(:processed_versions).and_return([[:big, @big], [:little, @little]])
         job.stub(:bucket).and_return(@bucket)
         job.stub(:version_key).with(:big).and_return('path/to/someimage_big.jpg')
         job.stub(:version_key).with(:little).and_return('path/to/someimage_little.jpg')

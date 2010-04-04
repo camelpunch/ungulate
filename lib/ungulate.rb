@@ -53,7 +53,7 @@ module Ungulate
 
     def process
       return false if processed_versions.empty?
-      processed_versions.each_pair do |version, image|
+      processed_versions.each do |version, image|
         bucket.put(version_key(version), image.to_blob)
       end
     end
