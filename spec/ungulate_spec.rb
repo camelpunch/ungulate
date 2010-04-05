@@ -60,6 +60,11 @@ module Ungulate
       it "should return a SqsGen2 instance using environment variables" do
         Job.sqs.should == @sqs
       end
+
+      it "should memoize" do
+        Job.instance_variable_set('@sqs', :cache)
+        Job.sqs.should == :cache
+      end
     end
 
     describe :pop do
@@ -113,6 +118,11 @@ module Ungulate
       it "should return a S3 instance using environment variables" do
         Job.s3.should == @s3
       end
+
+      it "should memoize" do
+        Job.instance_variable_set('@s3', :cache)
+        Job.s3.should == :cache
+      end
     end
 
     describe :attributes= do
@@ -142,6 +152,12 @@ module Ungulate
       end
 
       it { should == :s3_data }
+
+      it "should memoize" do
+        job = Job.new
+        job.instance_variable_set('@source', :cache)
+        job.source.should == :cache
+      end
     end
 
     describe :processed_versions do
@@ -166,6 +182,12 @@ module Ungulate
 
       it { should include([:large, :large_image]) }
       it { should include([:small, :small_image]) }
+
+      it "should memoize" do
+        job = Job.new
+        job.instance_variable_set('@processed_versions', :cache)
+        job.processed_versions.should == :cache
+      end
     end
 
     describe :process do

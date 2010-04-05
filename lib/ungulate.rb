@@ -3,7 +3,10 @@ require 'right_aws'
 require 'RMagick'
 
 module Ungulate
+  @logger = Logger.new STDOUT
+
   def self.run(queue_name)
+    @logger.info "Checking for job on #{queue_name}"
     Job.pop(queue_name).process
   end
 
@@ -11,13 +14,15 @@ module Ungulate
     attr_accessor :bucket, :key, :queue, :versions
 
     def self.s3
-      RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                       ENV['AMAZON_SECRET_ACCESS_KEY'])
+      @s3 ||=
+        RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                         ENV['AMAZON_SECRET_ACCESS_KEY'])
     end
 
     def self.sqs
-      RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                            ENV['AMAZON_SECRET_ACCESS_KEY'])
+      @sqs ||= 
+        RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                              ENV['AMAZON_SECRET_ACCESS_KEY'])
     end
 
     def self.pop(queue_name)
@@ -30,6 +35,7 @@ module Ungulate
     end
 
     def initialize
+      @logger = Logger.new STDOUT
       self.versions = []
     end
 
@@ -40,24 +46,30 @@ module Ungulate
     end
 
     def processed_versions
-      versions.map do |name, instruction|
-        method, x, y = instruction
-        image = Magick::Image.from_blob(source).first
-        [name, image.send(method, x, y)]
-      end
+      @processed_versions ||=
+        versions.map do |name, instruction|
+          method, x, y = instruction
+          image = Magick::Image.from_blob(source).first
+          @logger.info "Performing #{method} with #{x}, #{y}"
+          [name, image.send(method, x, y)]
+        end
     end
 
     def source
-      bucket.get key
+      if @source
+        @source
+      else
+        @logger.info "Grabbing source image #{key}"
+        @source = bucket.get key
+      end
     end
 
     def process
       return false if processed_versions.empty?
       processed_versions.each do |version, image|
-        bucket.put(version_key(version), 
-                   image.to_blob,
-                   {},
-                   'public-read')
+        version_key = version_key version
+        @logger.info "Storing #{version_key}"
+        bucket.put(version_key, image.to_blob, {}, 'public-read')
       end
     end
 
