@@ -7,11 +7,11 @@ Given /^an empty queue$/ do
 end
 
 Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
-  bucket_name = "ungulate-test"
+  @bucket_name = "ungulate-test"
 
   @s3 = RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
                          ENV['AMAZON_SECRET_ACCESS_KEY'])
-  @bucket = @s3.bucket bucket_name
+  @bucket = @s3.bucket @bucket_name
   @bucket.put key, File.open('features/camels.jpg').read
 
 
@@ -22,7 +22,7 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
   end
 
   message = {
-    :bucket => bucket_name,
+    :bucket => @bucket_name,
     :key => key,
     :versions => versions
   }.to_yaml

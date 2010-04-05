@@ -12,7 +12,7 @@ Feature: Image resize
       | large | 200   | 100     |
       | small | 100   | 50      |
     When I run Ungulate
-    Then there should be the following versions:
+    Then there should be the following public versions:
       | key             |
       | image_large.jpg |
       | image_small.jpg |
@@ -23,7 +23,7 @@ Feature: Image resize
       | large | 200   | 100     |
       | small | 100   | 50      |
     When I run Ungulate
-    Then there should be the following versions:
+    Then there should be the following public versions:
       | key                           |
       | some/path/to/image_large.jpg  |
       | some/path/to/image_small.jpg  |

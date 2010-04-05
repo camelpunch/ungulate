@@ -183,8 +183,14 @@ module Ungulate
       after { subject.process }
 
       it "should send each processed version to S3" do
-        @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 'bigdata')
-        @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 'littledata')
+        @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 
+                                          'bigdata',
+                                          {},
+                                          'public-read')
+        @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 
+                                          'littledata',
+                                          {},
+                                          'public-read')
       end
 
       context "empty array" do

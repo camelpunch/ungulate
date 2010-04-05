@@ -54,7 +54,10 @@ module Ungulate
     def process
       return false if processed_versions.empty?
       processed_versions.each do |version, image|
-        bucket.put(version_key(version), image.to_blob)
+        bucket.put(version_key(version), 
+                   image.to_blob,
+                   {},
+                   'public-read')
       end
     end
 
