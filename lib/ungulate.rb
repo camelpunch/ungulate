@@ -68,7 +68,7 @@ module Ungulate
       return false if processed_versions.empty?
       processed_versions.each do |version, image|
         version_key = version_key version
-        @logger.info "Storing #{version_key}"
+        @logger.info "Storing #{version} @ #{version_key}"
         bucket.put(version_key, image.to_blob, {}, 'public-read')
       end
     end
