@@ -16,4 +16,4 @@ This is a simple queue runner that expects a YAML-encoded job description for RM
 
 == Copyright
 
-Copyright (c) 2010 Andrew Bruce. See LICENSE for details.
+Copyright (c) 2010 Camel Punch Limited. See LICENSE for details.
