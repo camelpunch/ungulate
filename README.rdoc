@@ -1,7 +1,9 @@
-= ungulate
+= Ungulate
 
-Description goes here.
+According to Wikipedia, this can mean "hoofed animal". Camels have hooves.
 
+This is a simple queue runner that expects a YAML-encoded job description for RMagick. Documentation: read the code, for now.
+ 
 == Note on Patches/Pull Requests
  
 * Fork the project.
