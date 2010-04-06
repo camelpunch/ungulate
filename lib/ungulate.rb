@@ -3,10 +3,12 @@ require 'right_aws'
 require 'RMagick'
 
 module Ungulate
-  @logger = Logger.new STDOUT
+  def self.logger
+    @logger ||= Logger.new STDOUT
+  end
 
   def self.run(queue_name)
-    @logger.info "Checking for job on #{queue_name}"
+    logger.info "Checking for job on #{queue_name}"
     Job.pop(queue_name).process
   end
 
@@ -35,7 +37,7 @@ module Ungulate
     end
 
     def initialize
-      @logger = Logger.new STDOUT
+      @logger = Ungulate.logger
       self.versions = []
     end
 
