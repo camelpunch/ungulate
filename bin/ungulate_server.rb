@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'lib/ungulate'
+require 'ungulate'
 
 if ARGV[0].nil?
   $stderr.puts "Must provide a queue name after calling the server"
