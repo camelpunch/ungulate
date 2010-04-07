@@ -10,7 +10,10 @@ begin
     gem.email = "andrew@camelpunch.com"
     gem.homepage = "http://github.com/camelpunch/ungulate"
     gem.authors = ["Andrew Bruce"]
+    gem.add_dependency "right_aws", ">= 1.10.0"
+    gem.add_dependency "rmagick", ">= 2.12.2"
     gem.add_development_dependency "rspec", ">= 1.2.9"
+    gem.add_development_dependency "cucumber", ">= 0.6.2"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
