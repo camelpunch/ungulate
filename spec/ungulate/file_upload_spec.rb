@@ -105,14 +105,10 @@ module Ungulate
       before do
         subject.stub(:policy).and_return(:policy)
         subject.stub(:secret_access_key).and_return(:secret)
-        @sha1 = mock('SHA1', :digest => :digested, :<< => nil)
-        HMAC::SHA1.stub(:new).with(:secret).and_return(@sha1)
-        Base64.stub(:encode64).with(:digested).and_return("stripme\n")
-      end
-
-      it "should add the policy" do
-        @sha1.should_receive(:<<).with(:policy)
-        subject.signature
+        @sha1 = mock('SHA1')
+        OpenSSL::Digest::Digest.stub(:new).with('sha1').and_return(@sha1)
+        OpenSSL::HMAC.stub(:digest).with(@sha1, :secret, :policy).and_return(:digest)
+        Base64.stub(:encode64).with(:digest).and_return("str\nipme\n")
       end
 
       it "should return the stripped base64 encoded digest" do

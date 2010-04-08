@@ -1,5 +1,4 @@
 require 'active_support'
-require 'hmac/sha1'
 class Ungulate::FileUpload
   attr_accessor(
     :access_key_id,
@@ -42,8 +41,10 @@ class Ungulate::FileUpload
   end
 
   def signature
-    sha1 = HMAC::SHA1.new(secret_access_key)
-    sha1 << policy
-    Base64.encode64(sha1.digest).strip
+    Base64.encode64(
+      OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'),
+                           secret_access_key, 
+                           policy)
+    ).gsub("\n", '')
   end
 end
