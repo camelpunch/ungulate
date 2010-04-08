@@ -3,25 +3,29 @@ require 'ungulate/file_upload'
 
 module Ungulate
   describe FileUpload do
-    subject do
+    before do
+      @expiration = 10.hours.from_now
       @bucket_url = "http://images.bob.com/"
       @access_key_id = "asdf"
       @key = "new-file"
 
-      @policy = { "expiration" => "2007-12-01T12:00:00.000Z",
-  "conditions" => [
-    {"bucket" => "johnsmith" },
-    ["starts-with", "$key", "user/eric/"],
-    {"acl" => "public-read" },
-    {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
-    ["starts-with", "$Content-Type", "image/"],
-    {"x-amz-meta-uuid" => "14365123651274"},
-    ["starts-with", "$x-amz-meta-tag", ""]
-  ]
-}
+      @policy = { 
+        "expiration" => @expiration,
+        "conditions" => [
+          {"bucket" => "johnsmith" },
+          ["starts-with", "$key", "user/eric/"],
+          {"acl" => "public-read" },
+          {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
+          ["starts-with", "$Content-Type", "image/"],
+          {"x-amz-meta-uuid" => "14365123651274"},
+          ["starts-with", "$x-amz-meta-tag", ""] 
+        ]
+      }
 
       @secret_access_key = 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o'
+    end
 
+    subject do
       FileUpload.new(
         :bucket_url => @bucket_url,
         :access_key_id => @access_key_id,
@@ -78,17 +82,22 @@ module Ungulate
 
     describe "policy=" do
       it "should store the ruby version for later use" do
-        subject.policy = :some_policy
-        subject.instance_variable_get('@policy_ruby').should == :some_policy
+        subject.policy = @policy
+        subject.instance_variable_get('@policy_ruby').should_not be_blank
       end
 
       it "should store the base64 encoded JSON" do
         subject # load subject without stubs
 
-        ActiveSupport::JSON.stub(:encode).with(:some_policy).and_return(:some_json)
+        ActiveSupport::JSON.stub(:encode).with(@policy).and_return(:some_json)
         Base64.stub(:encode64).with(:some_json).and_return("ENCODED\nLINE\nLINE")
-        subject.policy = :some_policy
+        subject.policy = @policy
         subject.policy.should == "ENCODEDLINELINE"
+      end
+
+      it "should ensure the expiration is utc" do
+        @expiration.should_receive(:utc).at_least(:once)
+        subject.policy = @policy
       end
     end
 

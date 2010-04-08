@@ -32,7 +32,8 @@ class Ungulate::FileUpload
 
   def policy=(policy)
     @policy_ruby = policy
-    policy_json = ActiveSupport::JSON.encode(policy)
+    @policy_ruby['expiration'].utc
+    policy_json = ActiveSupport::JSON.encode(@policy_ruby)
     @policy = Base64.encode64(policy_json).gsub("\n", '')
   end
 
