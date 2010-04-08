@@ -1,3 +1,4 @@
+require 'active_support'
 require 'hmac/sha1'
 class Ungulate::FileUpload
   attr_accessor(
@@ -17,10 +18,16 @@ class Ungulate::FileUpload
   end
 
   def acl
-    'private'
+    conditions.find {|condition| condition.first == 'acl'}.second
+  end
+
+  def conditions
+    ActiveSupport::JSON.decode(@policy_json)['conditions'].
+      map {|condition| condition.to_a.flatten}
   end
 
   def policy=(json)
+    @policy_json = json
     @policy = Base64.encode64(json).gsub("\n", '')
   end
 
