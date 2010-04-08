@@ -2,8 +2,20 @@
 
 According to Wikipedia, this can mean "hoofed animal". Camels have hooves.
 
-This is a simple queue runner that expects a YAML-encoded job description for RMagick. Documentation: read the code, for now.
+This is a gem for uploading and processing images using an Amazon Web Services stack.
+
+It comes with a few goodies:
+
+* ungulate_server.rb - simple queue runner that expects a YAML-encoded job description for RMagick
+* Ungulate::FileUpload - a model for e.g. Rails that does some cryptography stuff - example to follow
+
+And some planned goodies for the future:
+
+* A view helper for Rails that makes it easy to use Ungulate::FileUpload
  
+== Installation
+gem install ungulate
+
 == Note on Patches/Pull Requests
  
 * Fork the project.
