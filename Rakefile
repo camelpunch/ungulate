@@ -10,6 +10,7 @@ begin
     gem.email = "andrew@camelpunch.com"
     gem.homepage = "http://github.com/camelpunch/ungulate"
     gem.authors = ["Andrew Bruce"]
+    gem.add_dependency "activesupport", ">= 2.3.5"
     gem.add_dependency "right_aws", ">= 1.10.0"
     gem.add_dependency "rmagick", ">= 2.12.2"
     gem.add_development_dependency "rspec", ">= 1.2.9"
