@@ -44,7 +44,15 @@ module Ungulate
     ] }
     its(:access_key_id) { should == @access_key_id }
     its(:key) { should == @key }
+    its(:redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
     its(:signature) { should == 'cgVL64YCpmstnlWlNg04b1ImJ44=' }
     its(:policy) { should == 'eyAiZXhwaXJhdGlvbiI6ICIyMDA3LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAiam9obnNtaXRoIiB9LAogICAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgInVzZXIvZXJpYy8iXSwKICAgIHsiYWNsIjogInB1YmxpYy1yZWFkIiB9LAogICAgeyJyZWRpcmVjdCI6ICJodHRwOi8vam9obnNtaXRoLnMzLmFtYXpvbmF3cy5jb20vc3VjY2Vzc2Z1bF91cGxvYWQuaHRtbCIgfSwKICAgIFsic3RhcnRzLXdpdGgiLCAiJENvbnRlbnQtVHlwZSIsICJpbWFnZS8iXSwKICAgIHsieC1hbXotbWV0YS11dWlkIjogIjE0MzY1MTIzNjUxMjc0In0sCiAgICBbInN0YXJ0cy13aXRoIiwgIiR4LWFtei1tZXRhLXRhZyIsICIiXQogIF0KfQo=' }
+
+    describe "conditions" do
+      it "should memoize" do
+        subject.instance_variable_set('@conditions', :cache)
+        subject.conditions.should == :cache
+      end
+    end
   end
 end
