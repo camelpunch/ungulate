@@ -21,15 +21,19 @@ class Ungulate::FileUpload
     condition 'acl'
   end
 
-  def conditions
-    @conditions ||=
-      ActiveSupport::JSON.decode(@policy_json)['conditions'].
-        map {|condition| condition.to_a.flatten}
+  def condition(key)
+    conditions.find {|condition| condition.first == key}.second
   end
 
-  def policy=(json)
-    @policy_json = json
-    @policy = Base64.encode64(json).gsub("\n", '')
+  def conditions
+    @conditions ||=
+      @policy_ruby['conditions'].map {|condition| condition.to_a.flatten}
+  end
+
+  def policy=(policy)
+    @policy_ruby = policy
+    policy_json = ActiveSupport::JSON.encode(policy)
+    @policy = Base64.encode64(policy_json).gsub("\n", '')
   end
 
   def success_action_redirect
@@ -40,11 +44,5 @@ class Ungulate::FileUpload
     sha1 = HMAC::SHA1.new(secret_access_key)
     sha1 << policy
     Base64.encode64(sha1.digest).strip
-  end
-
-  protected
-
-  def condition(key)
-    conditions.find {|condition| condition.first == key}.second
   end
 end

@@ -8,18 +8,18 @@ module Ungulate
       @access_key_id = "asdf"
       @key = "new-file"
 
-      @policy = '{ "expiration": "2007-12-01T12:00:00.000Z",
-  "conditions": [
-    {"bucket": "johnsmith" },
+      @policy = { "expiration" => "2007-12-01T12:00:00.000Z",
+  "conditions" => [
+    {"bucket" => "johnsmith" },
     ["starts-with", "$key", "user/eric/"],
-    {"acl": "public-read" },
-    {"success_action_redirect": "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
+    {"acl" => "public-read" },
+    {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
     ["starts-with", "$Content-Type", "image/"],
-    {"x-amz-meta-uuid": "14365123651274"},
+    {"x-amz-meta-uuid" => "14365123651274"},
     ["starts-with", "$x-amz-meta-tag", ""]
   ]
 }
-'
+
       @secret_access_key = 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o'
 
       FileUpload.new(
@@ -45,13 +45,69 @@ module Ungulate
     its(:access_key_id) { should == @access_key_id }
     its(:key) { should == @key }
     its(:success_action_redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
-    its(:signature) { should == '4lCsX4TTdC/69HTJE7RWwEdJFgk=' }
-    its(:policy) { should == 'eyAiZXhwaXJhdGlvbiI6ICIyMDA3LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAiam9obnNtaXRoIiB9LAogICAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgInVzZXIvZXJpYy8iXSwKICAgIHsiYWNsIjogInB1YmxpYy1yZWFkIiB9LAogICAgeyJzdWNjZXNzX2FjdGlvbl9yZWRpcmVjdCI6ICJodHRwOi8vam9obnNtaXRoLnMzLmFtYXpvbmF3cy5jb20vc3VjY2Vzc2Z1bF91cGxvYWQuaHRtbCIgfSwKICAgIFsic3RhcnRzLXdpdGgiLCAiJENvbnRlbnQtVHlwZSIsICJpbWFnZS8iXSwKICAgIHsieC1hbXotbWV0YS11dWlkIjogIjE0MzY1MTIzNjUxMjc0In0sCiAgICBbInN0YXJ0cy13aXRoIiwgIiR4LWFtei1tZXRhLXRhZyIsICIiXQogIF0KfQo=' }
+
+    describe "condition" do
+      before do
+        subject.stub(:conditions).
+          and_return([ ['colour', 'blue'], ['predicate', 'subject', 'object'] ])
+      end
+
+      it "should return the value of a tuple" do
+        subject.condition('colour').should == 'blue'
+      end
+    end
 
     describe "conditions" do
       it "should memoize" do
         subject.instance_variable_set('@conditions', :cache)
         subject.conditions.should == :cache
+      end
+
+      it "should convert mixed hash and array policy to nested arrays" do
+        subject.
+          instance_variable_set('@policy_ruby', 
+                                { 
+                                  'conditions' => [ 
+                                    {'colour' => 'blue'}, 
+                                    ['predicate', 'subject', 'object'] 
+                                  ]
+                                })
+        subject.conditions.should == [ ['colour', 'blue'], ['predicate', 'subject', 'object'] ]
+      end
+    end
+
+    describe "policy=" do
+      it "should store the ruby version for later use" do
+        subject.policy = :some_policy
+        subject.instance_variable_get('@policy_ruby').should == :some_policy
+      end
+
+      it "should store the base64 encoded JSON" do
+        subject # load subject without stubs
+
+        ActiveSupport::JSON.stub(:encode).with(:some_policy).and_return(:some_json)
+        Base64.stub(:encode64).with(:some_json).and_return("ENCODED\nLINE\nLINE")
+        subject.policy = :some_policy
+        subject.policy.should == "ENCODEDLINELINE"
+      end
+    end
+
+    describe "signature" do
+      before do
+        subject.stub(:policy).and_return(:policy)
+        subject.stub(:secret_access_key).and_return(:secret)
+        @sha1 = mock('SHA1', :digest => :digested, :<< => nil)
+        HMAC::SHA1.stub(:new).with(:secret).and_return(@sha1)
+        Base64.stub(:encode64).with(:digested).and_return("stripme\n")
+      end
+
+      it "should add the policy" do
+        @sha1.should_receive(:<<).with(:policy)
+        subject.signature
+      end
+
+      it "should return the stripped base64 encoded digest" do
+        subject.signature.should == "stripme"
       end
     end
   end
