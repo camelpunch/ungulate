@@ -32,8 +32,8 @@ class Ungulate::FileUpload
     @policy = Base64.encode64(json).gsub("\n", '')
   end
 
-  def redirect
-    condition 'redirect'
+  def success_action_redirect
+    condition 'success_action_redirect'
   end
 
   def signature

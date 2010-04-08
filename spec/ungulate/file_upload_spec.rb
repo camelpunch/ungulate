@@ -13,7 +13,7 @@ module Ungulate
     {"bucket": "johnsmith" },
     ["starts-with", "$key", "user/eric/"],
     {"acl": "public-read" },
-    {"redirect": "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
+    {"success_action_redirect": "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
     ["starts-with", "$Content-Type", "image/"],
     {"x-amz-meta-uuid": "14365123651274"},
     ["starts-with", "$x-amz-meta-tag", ""]
@@ -37,16 +37,16 @@ module Ungulate
       ['bucket', 'johnsmith'], 
       ['starts-with', '$key', 'user/eric/'],
       ['acl', 'public-read'],
-      ['redirect', 'http://johnsmith.s3.amazonaws.com/successful_upload.html'],
+      ['success_action_redirect', 'http://johnsmith.s3.amazonaws.com/successful_upload.html'],
       ['starts-with', '$Content-Type', 'image/'],
       ["x-amz-meta-uuid", "14365123651274"],
       ["starts-with", "$x-amz-meta-tag", ""]
     ] }
     its(:access_key_id) { should == @access_key_id }
     its(:key) { should == @key }
-    its(:redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
-    its(:signature) { should == 'cgVL64YCpmstnlWlNg04b1ImJ44=' }
-    its(:policy) { should == 'eyAiZXhwaXJhdGlvbiI6ICIyMDA3LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAiam9obnNtaXRoIiB9LAogICAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgInVzZXIvZXJpYy8iXSwKICAgIHsiYWNsIjogInB1YmxpYy1yZWFkIiB9LAogICAgeyJyZWRpcmVjdCI6ICJodHRwOi8vam9obnNtaXRoLnMzLmFtYXpvbmF3cy5jb20vc3VjY2Vzc2Z1bF91cGxvYWQuaHRtbCIgfSwKICAgIFsic3RhcnRzLXdpdGgiLCAiJENvbnRlbnQtVHlwZSIsICJpbWFnZS8iXSwKICAgIHsieC1hbXotbWV0YS11dWlkIjogIjE0MzY1MTIzNjUxMjc0In0sCiAgICBbInN0YXJ0cy13aXRoIiwgIiR4LWFtei1tZXRhLXRhZyIsICIiXQogIF0KfQo=' }
+    its(:success_action_redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
+    its(:signature) { should == '4lCsX4TTdC/69HTJE7RWwEdJFgk=' }
+    its(:policy) { should == 'eyAiZXhwaXJhdGlvbiI6ICIyMDA3LTEyLTAxVDEyOjAwOjAwLjAwMFoiLAogICJjb25kaXRpb25zIjogWwogICAgeyJidWNrZXQiOiAiam9obnNtaXRoIiB9LAogICAgWyJzdGFydHMtd2l0aCIsICIka2V5IiwgInVzZXIvZXJpYy8iXSwKICAgIHsiYWNsIjogInB1YmxpYy1yZWFkIiB9LAogICAgeyJzdWNjZXNzX2FjdGlvbl9yZWRpcmVjdCI6ICJodHRwOi8vam9obnNtaXRoLnMzLmFtYXpvbmF3cy5jb20vc3VjY2Vzc2Z1bF91cGxvYWQuaHRtbCIgfSwKICAgIFsic3RhcnRzLXdpdGgiLCAiJENvbnRlbnQtVHlwZSIsICJpbWFnZS8iXSwKICAgIHsieC1hbXotbWV0YS11dWlkIjogIjE0MzY1MTIzNjUxMjc0In0sCiAgICBbInN0YXJ0cy13aXRoIiwgIiR4LWFtei1tZXRhLXRhZyIsICIiXQogIF0KfQo=' }
 
     describe "conditions" do
       it "should memoize" do
