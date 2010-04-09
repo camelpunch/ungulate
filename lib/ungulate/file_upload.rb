@@ -8,6 +8,7 @@ class Ungulate::FileUpload
 
   cattr_accessor(
     :access_key_id,
+    :queue_name,
     :secret_access_key
   )
 

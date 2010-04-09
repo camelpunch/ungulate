@@ -25,6 +25,7 @@ module Ungulate
       @secret_access_key = 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o'
       FileUpload.access_key_id = @access_key_id
       FileUpload.secret_access_key = @secret_access_key
+      FileUpload.queue_name = 'some-queue-name'
     end
 
     subject do
@@ -48,6 +49,7 @@ module Ungulate
     ] }
     its(:access_key_id) { should == @access_key_id }
     its(:key) { should == @key }
+    its(:queue_name) { should == 'some-queue-name' }
     its(:success_action_redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
 
     describe "condition" do
