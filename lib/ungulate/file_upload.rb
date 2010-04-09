@@ -1,19 +1,20 @@
 require 'active_support'
 class Ungulate::FileUpload
   attr_accessor(
-    :access_key_id,
     :bucket_url,
     :key,
-    :policy,
+    :policy
+  )
+
+  cattr_accessor(
+    :access_key_id,
     :secret_access_key
   )
 
   def initialize(params)
-    self.access_key_id = params[:access_key_id]
     self.bucket_url = params[:bucket_url]
     self.key = params[:key]
     self.policy = params[:policy]
-    self.secret_access_key = params[:secret_access_key]
   end
 
   def acl

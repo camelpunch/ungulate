@@ -6,7 +6,6 @@ module Ungulate
     before do
       @expiration = 10.hours.from_now
       @bucket_url = "http://images.bob.com/"
-      @access_key_id = "asdf"
       @key = "new-file"
 
       @policy = { 
@@ -22,14 +21,15 @@ module Ungulate
         ]
       }
 
+      @access_key_id = "asdf"
       @secret_access_key = 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o'
+      FileUpload.access_key_id = @access_key_id
+      FileUpload.secret_access_key = @secret_access_key
     end
 
     subject do
       FileUpload.new(
         :bucket_url => @bucket_url,
-        :access_key_id => @access_key_id,
-        :secret_access_key => @secret_access_key,
         :policy => @policy,
         :key => @key
       )
@@ -104,10 +104,9 @@ module Ungulate
     describe "signature" do
       before do
         subject.stub(:policy).and_return(:policy)
-        subject.stub(:secret_access_key).and_return(:secret)
         @sha1 = mock('SHA1')
         OpenSSL::Digest::Digest.stub(:new).with('sha1').and_return(@sha1)
-        OpenSSL::HMAC.stub(:digest).with(@sha1, :secret, :policy).and_return(:digest)
+        OpenSSL::HMAC.stub(:digest).with(@sha1, @secret_access_key, :policy).and_return(:digest)
         Base64.stub(:encode64).with(:digest).and_return("str\nipme\n")
       end
 
