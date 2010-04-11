@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'right_aws'
 require 'RMagick'
+require 'mime/types'
 
 module Ungulate
   def self.logger
@@ -71,7 +72,11 @@ module Ungulate
       processed_versions.each do |version, image|
         version_key = version_key version
         @logger.info "Storing #{version} @ #{version_key}"
-        bucket.put(version_key, image.to_blob, {}, 'public-read')
+        bucket.put(version_key, 
+                   image.to_blob, 
+                   {},
+                   'public-read',
+                   {'Content-Type' => MIME::Types.type_for(image.format).to_s})
       end
     end
 

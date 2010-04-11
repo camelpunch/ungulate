@@ -193,8 +193,10 @@ module Ungulate
     describe :process do
       subject do
         job = Job.new
-        @big = mock('Image', :to_blob => 'bigdata')
-        @little = mock('Image', :to_blob => 'littledata')
+        @big = mock('Image', :to_blob => 'bigdata', :format => 'JPEG')
+        @little = mock('Image', :to_blob => 'littledata', :format => 'JPEG')
+        @mime_type = mock('MimeType', :to_s => 'image/jpeg')
+        MIME::Types.stub(:type_for).with('JPEG').and_return(@mime_type)
         job.stub(:processed_versions).and_return([[:big, @big], [:little, @little]])
         job.stub(:bucket).and_return(@bucket)
         job.stub(:version_key).with(:big).and_return('path/to/someimage_big.jpg')
@@ -208,11 +210,13 @@ module Ungulate
         @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 
                                           'bigdata',
                                           {},
-                                          'public-read')
+                                          'public-read',
+                                          {'Content-Type' => 'image/jpeg'})
         @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 
                                           'littledata',
                                           {},
-                                          'public-read')
+                                          'public-read',
+                                          {'Content-Type' => 'image/jpeg'})
       end
 
       context "empty array" do
