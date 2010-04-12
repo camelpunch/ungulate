@@ -11,7 +11,7 @@ logger = Logger.new STDERR
 
 loop do
   begin
-    sleep 1
+    sleep ENV['SLEEP'] || 2
     Ungulate.run(ARGV[0]) 
   rescue StandardError => e
     logger.error e.message
