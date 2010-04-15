@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Andrew Bruce"]
-  s.date = %q{2010-04-11}
+  s.date = %q{2010-04-15}
   s.default_executable = %q{ungulate_server.rb}
   s.description = %q{WIP}
   s.email = %q{andrew@camelpunch.com}
@@ -35,10 +35,15 @@ Gem::Specification.new do |s|
      "features/support.rb",
      "lib/ungulate.rb",
      "lib/ungulate/file_upload.rb",
+     "lib/ungulate/job.rb",
+     "lib/ungulate/server.rb",
+     "lib/ungulate/view_helpers.rb",
      "spec/spec.opts",
      "spec/spec_helper.rb",
      "spec/ungulate/file_upload_spec.rb",
-     "spec/ungulate_spec.rb",
+     "spec/ungulate/job_spec.rb",
+     "spec/ungulate/server_spec.rb",
+     "spec/ungulate/view_helpers_spec.rb",
      "ungulate.gemspec"
   ]
   s.homepage = %q{http://github.com/camelpunch/ungulate}
@@ -49,7 +54,9 @@ Gem::Specification.new do |s|
   s.test_files = [
     "spec/spec_helper.rb",
      "spec/ungulate/file_upload_spec.rb",
-     "spec/ungulate_spec.rb"
+     "spec/ungulate/job_spec.rb",
+     "spec/ungulate/server_spec.rb",
+     "spec/ungulate/view_helpers_spec.rb"
   ]
 
   if s.respond_to? :specification_version then
