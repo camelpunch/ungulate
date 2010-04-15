@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require 'ungulate'
+require 'ungulate/server'
 
 if ARGV[0].nil?
   $stderr.puts "Must provide a queue name after calling the server"
@@ -12,7 +12,7 @@ logger = Logger.new STDERR
 loop do
   begin
     sleep ENV['SLEEP'] || 2
-    Ungulate.run(ARGV[0]) 
+    Ungulate::Server.run(ARGV[0]) 
   rescue StandardError => e
     logger.error e.message
   end
