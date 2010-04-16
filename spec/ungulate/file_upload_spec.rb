@@ -85,13 +85,13 @@ module Ungulate
     describe "enqueue" do
       before do
         @q = mock('queue')
-        subject.stub(:queue).and_return(@q)
+        Ungulate::FileUpload.stub(:queue).and_return(@q)
         @job_hash = mock('Hash', :to_yaml => :some_yaml)
       end
 
       it "should queue the yamlised version of the passed job hash" do
         @q.should_receive(:send_message).with(:some_yaml)
-        subject.enqueue(@job_hash)
+        Ungulate::FileUpload.enqueue(@job_hash)
       end
     end
 
@@ -128,7 +128,7 @@ module Ungulate
       end
 
       it "should return a queue instance" do
-        subject.queue.should == :queue_instance
+        Ungulate::FileUpload.queue.should == :queue_instance
       end
     end
 
