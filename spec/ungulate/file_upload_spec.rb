@@ -82,6 +82,19 @@ module Ungulate
       end
     end
 
+    describe "enqueue" do
+      before do
+        @q = mock('queue')
+        subject.stub(:queue).and_return(@q)
+        @job_hash = mock('Hash', :to_yaml => :some_yaml)
+      end
+
+      it "should queue the yamlised version of the passed job hash" do
+        @q.should_receive(:send_message).with(:some_yaml)
+        subject.enqueue(@job_hash)
+      end
+    end
+
     describe "policy=" do
       it "should store the ruby version for later use" do
         subject.policy = @policy
@@ -100,6 +113,22 @@ module Ungulate
       it "should ensure the expiration is utc" do
         @expiration.should_receive(:utc).at_least(:once)
         subject.policy = @policy
+      end
+    end
+
+    describe "queue" do
+      before do
+        sqs = mock('sqs')
+        FileUpload.queue_name = 'somequeuename'
+        FileUpload.access_key_id = 'someaccesskey'
+        FileUpload.secret_access_key = 'somesecret'
+        RightAws::SqsGen2.stub(:new).with('someaccesskey', 'somesecret').
+          and_return(sqs)
+        sqs.stub(:queue).with('somequeuename').and_return(:queue_instance)
+      end
+
+      it "should return a queue instance" do
+        subject.queue.should == :queue_instance
       end
     end
 

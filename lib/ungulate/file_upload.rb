@@ -31,11 +31,21 @@ class Ungulate::FileUpload
       @policy_ruby['conditions'].map {|condition| condition.to_a.flatten}
   end
 
+  def enqueue(job_description)
+    queue.send_message(job_description.to_yaml)
+  end
+
   def policy=(policy)
     @policy_ruby = policy
     @policy_ruby['expiration'].utc
     policy_json = ActiveSupport::JSON.encode(@policy_ruby)
     @policy = Base64.encode64(policy_json).gsub("\n", '')
+  end
+
+  def queue
+    sqs = RightAws::SqsGen2.new(Ungulate::FileUpload.access_key_id,
+                                Ungulate::FileUpload.secret_access_key)
+    sqs.queue(Ungulate::FileUpload.queue_name)
   end
 
   def success_action_redirect
