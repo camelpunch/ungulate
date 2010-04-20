@@ -8,13 +8,13 @@ It comes with a few goodies:
 
 * ungulate_server.rb - simple queue runner that expects a YAML-encoded job description for RMagick
 * Ungulate::FileUpload - a model for e.g. Rails that does some cryptography stuff - example to follow
+* A view helper for Rails: "ungulate_upload_form_for"
 
-And some planned goodies for the future:
-
-* A view helper for Rails that makes it easy to use Ungulate::FileUpload
- 
 == Installation
-gem install ungulate
+gem install ungulate --source=gemcutter.org
+
+== Documentation
+http://wiki.github.com/camelpunch/ungulate/
 
 == Note on Patches/Pull Requests
  
