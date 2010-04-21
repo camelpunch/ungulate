@@ -1,7 +1,7 @@
 When /^I run Ungulate$/ do
   @errors = OpenStruct.new :write => ''
   $stderr = @errors
-  Ungulate.run @queue_name
+  Ungulate::Server.run @queue_name
 end
 
 Then /^there should be no errors$/ do
