@@ -122,7 +122,7 @@ module Ungulate
         FileUpload.queue_name = 'somequeuename'
         FileUpload.access_key_id = 'someaccesskey'
         FileUpload.secret_access_key = 'somesecret'
-        RightAws::SqsGen2.stub(:new).with('someaccesskey', 'somesecret').
+        Aws::Sqs.stub(:new).with('someaccesskey', 'somesecret').
           and_return(sqs)
         sqs.stub(:queue).with('somequeuename').and_return(:queue_instance)
       end

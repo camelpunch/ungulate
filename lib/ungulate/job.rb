@@ -1,5 +1,5 @@
 require 'rubygems'
-require 'right_aws'
+require 'aws'
 require 'RMagick'
 require 'mime/types'
 
@@ -9,14 +9,14 @@ module Ungulate
 
     def self.s3
       @s3 ||=
-        RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                         ENV['AMAZON_SECRET_ACCESS_KEY'])
+        Aws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                    ENV['AMAZON_SECRET_ACCESS_KEY'])
     end
 
     def self.sqs
       @sqs ||= 
-        RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                              ENV['AMAZON_SECRET_ACCESS_KEY'])
+        Aws::Sqs.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                     ENV['AMAZON_SECRET_ACCESS_KEY'])
     end
 
     def self.pop(queue_name)

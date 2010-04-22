@@ -17,7 +17,7 @@ class Ungulate::FileUpload
   end
 
   def self.queue
-    sqs = RightAws::SqsGen2.new(access_key_id, secret_access_key)
+    sqs = Aws::Sqs.new(access_key_id, secret_access_key)
     sqs.queue(queue_name)
   end
 
