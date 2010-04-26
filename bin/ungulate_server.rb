@@ -11,8 +11,8 @@ logger = Logger.new STDERR
 
 loop do
   begin
-    sleep ENV['SLEEP'] || 2
-    Ungulate::Server.run(ARGV[0]) 
+    processed_something = Ungulate::Server.run(ARGV[0]) 
+    sleep(ENV['SLEEP'] || 2) unless processed_something
   rescue StandardError => e
     logger.error e.message
   end
