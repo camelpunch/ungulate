@@ -61,6 +61,10 @@ module Ungulate
       it "should return the value of a tuple" do
         subject.condition('colour').should == 'blue'
       end
+
+      it "should cope with missing attribute" do
+        subject.condition('bob').should be_nil
+      end
     end
 
     describe "conditions" do

@@ -32,7 +32,8 @@ class Ungulate::FileUpload
   end
 
   def condition(key)
-    conditions.find {|condition| condition.first == key}.second
+    found_key, found_value = conditions.find {|condition| condition.first == key}
+    found_value if found_value
   end
 
   def conditions
