@@ -6,7 +6,7 @@ module Ungulate
     before do
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
       ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
-      @bucket = mock('Bucket')
+      @bucket = mock('Bucket', :put => nil)
       @sqs = mock('Sqs')
       @s3 = mock('S3')
       @q = mock('Queue')
@@ -127,42 +127,50 @@ module Ungulate
     end
 
     describe :processed_versions do
-      subject do
-        job = Job.new
+      before do
+        @job = Job.new
         versions = {
           :large => [ :resize_to_fit, 100, 200 ],
           :small => [ :resize_to_fill, 64, 64 ],
         }
-        job.stub(:versions).and_return(versions)
-        job.stub(:key).and_return('someimage.jpg')
+        @job.stub(:versions).and_return(versions)
+        @job.stub(:key).and_return('someimage.jpg')
 
-        job.stub(:source).and_return(:data)
-        @source_image = mock('Image')
+        @job.stub(:source).and_return(:data)
+        @source_image = mock('Image', :destroy! => nil)
         Magick::Image.stub(:from_blob).with(:data).and_return([@source_image])
 
         @source_image.stub(:resize_to_fit).with(100, 200).and_return(:large_image)
         @source_image.stub(:resize_to_fill).with(64, 64).and_return(:small_image)
-
-        job.processed_versions
       end
 
-      it { should include([:large, :large_image]) }
-      it { should include([:small, :small_image]) }
+      context "result" do
+        subject { @job.processed_versions }
+        it { should include([:large, :large_image]) }
+        it { should include([:small, :small_image]) }
+      end
+
+      it "should destroy the image object" do
+        @source_image.should_receive(:destroy!)
+        @job.processed_versions
+      end
 
       it "should memoize" do
-        job = Job.new
-        job.instance_variable_set('@processed_versions', :cache)
-        job.processed_versions.should == :cache
+        @job.instance_variable_set('@processed_versions', :cache)
+        @job.processed_versions.should == :cache
       end
     end
 
     describe :process do
-      subject do
-        job = Job.new
-        @big = mock('Image', :to_blob => 'bigdata', :format => 'JPEG')
-        @little = mock('Image', :to_blob => 'littledata', :format => 'JPEG')
+      before do
+        @big = mock('Image', :destroy! => nil, :to_blob => 'bigdata', :format => 'JPEG')
+        @little = mock('Image', :destroy! => nil, :to_blob => 'littledata', :format => 'JPEG')
         @mime_type = mock('MimeType', :to_s => 'image/jpeg')
         MIME::Types.stub(:type_for).with('JPEG').and_return(@mime_type)
+      end
+
+      subject do
+        job = Job.new
         job.stub(:processed_versions).and_return([[:big, @big], [:little, @little]])
         job.stub(:bucket).and_return(@bucket)
         job.stub(:version_key).with(:big).and_return('path/to/someimage_big.jpg')
@@ -171,6 +179,11 @@ module Ungulate
       end
 
       after { subject.process }
+
+      it "should destroy the image objects" do
+        @big.should_receive(:destroy!)
+        @little.should_receive(:destroy!)
+      end
 
       it "should send each processed version to S3" do
         @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 

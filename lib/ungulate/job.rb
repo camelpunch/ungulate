@@ -45,7 +45,9 @@ module Ungulate
           method, x, y = instruction
           image = Magick::Image.from_blob(source).first
           @logger.info "Performing #{method} with #{x}, #{y}"
-          [name, image.send(method, x, y)]
+          processed_image = image.send(method, x, y)
+          image.destroy!
+          [name, processed_image]
         end
     end
 
@@ -68,6 +70,7 @@ module Ungulate
                    {},
                    'public-read',
                    {'Content-Type' => MIME::Types.type_for(image.format).to_s})
+        image.destroy!
       end
     end
 
