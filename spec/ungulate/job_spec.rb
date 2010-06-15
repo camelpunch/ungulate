@@ -7,7 +7,7 @@ module Ungulate
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
       ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
       @bucket = mock('Bucket', :put => nil)
-      @sqs = mock('Sqs')
+      @sqs = mock('SqsGen2')
       @s3 = mock('S3')
       @q = mock('Queue')
       @versions = {
@@ -20,10 +20,10 @@ module Ungulate
 
     describe :sqs do
       before do
-        Aws::Sqs.stub(:new).with('test-key-id', 'test-secret').and_return(@sqs)
+        RightAws::SqsGen2.stub(:new).with('test-key-id', 'test-secret').and_return(@sqs)
       end
 
-      it "should return a Sqs instance using environment variables" do
+      it "should return a SqsGen2 instance using environment variables" do
         Job.sqs.should == @sqs
       end
 
@@ -78,7 +78,7 @@ module Ungulate
 
     describe :s3 do
       before do
-        Aws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
+        RightAws::S3.stub(:new).with('test-key-id', 'test-secret').and_return(@s3)
       end
 
       it "should return a S3 instance using environment variables" do
