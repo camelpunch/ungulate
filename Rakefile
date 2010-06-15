@@ -11,11 +11,11 @@ begin
     gem.homepage = "http://github.com/camelpunch/ungulate"
     gem.authors = ["Andrew Bruce"]
     gem.add_dependency "activesupport", ">= 2.3.5"
-    gem.add_dependency "right_aws", ">= 1.10.0"
-    gem.add_dependency "rmagick", ">= 2.12.2"
+    gem.add_dependency "right_aws", ">= 2.0.0"
+    gem.add_dependency "rmagick", ">= 2.13.1"
     gem.add_dependency "mime-types", ">= 1.16"
-    gem.add_development_dependency "rspec", ">= 1.2.9"
-    gem.add_development_dependency "cucumber", ">= 0.6.2"
+    gem.add_development_dependency "rspec", ">= 1.3.0"
+    gem.add_development_dependency "cucumber", ">= 0.8.1"
     # gem is a Gem::Specification... see http://www.rubygems.org/read/chapter/20 for additional settings
   end
   Jeweler::GemcutterTasks.new
