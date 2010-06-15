@@ -11,7 +11,7 @@ It comes with a few goodies:
 * A view helper for Rails: "ungulate_upload_form_for"
 
 == Installation
-gem install ungulate --source=gemcutter.org
+gem install ungulate
 
 == Documentation
 http://wiki.github.com/camelpunch/ungulate/
