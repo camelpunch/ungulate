@@ -2,6 +2,7 @@ require 'rubygems'
 require 'right_aws'
 require 'RMagick'
 require 'mime/types'
+require 'yaml'
 
 module Ungulate
   class Job
