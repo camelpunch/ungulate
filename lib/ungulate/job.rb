@@ -66,11 +66,17 @@ module Ungulate
       processed_versions.each do |version, image|
         version_key = version_key version
         @logger.info "Storing #{version} @ #{version_key}"
-        bucket.put(version_key, 
-                   image.to_blob, 
-                   {},
-                   'public-read',
-                   {'Content-Type' => MIME::Types.type_for(image.format).to_s})
+        bucket.put(
+          version_key, 
+          image.to_blob, 
+          {},
+          'public-read',
+          {
+            'Content-Type' => MIME::Types.type_for(image.format).to_s,
+            # expire in about one month: refactor to grab from job description
+            'Cache-Control' => 'max-age=2629743',
+          }
+        )
         image.destroy!
       end
     end

@@ -186,16 +186,21 @@ module Ungulate
       end
 
       it "should send each processed version to S3" do
+        expected_headers = {
+          'Content-Type' => 'image/jpeg',
+          'Cache-Control' => 'max-age=2629743',
+        }
+
         @bucket.should_receive(:put).with('path/to/someimage_big.jpg', 
                                           'bigdata',
                                           {},
                                           'public-read',
-                                          {'Content-Type' => 'image/jpeg'})
+                                          expected_headers)
         @bucket.should_receive(:put).with('path/to/someimage_little.jpg', 
                                           'littledata',
                                           {},
                                           'public-read',
-                                          {'Content-Type' => 'image/jpeg'})
+                                          expected_headers)
       end
 
       context "empty array" do
