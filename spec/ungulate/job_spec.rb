@@ -99,7 +99,8 @@ module Ungulate
         job.attributes = { 
           :bucket => 'hello', 
           :key => 'path/to/filename.gif', 
-          :versions => @versions
+          :versions => @versions,
+          :notification_url => 'http://some.host/with/simple/path',
         }
         job
       end
@@ -107,6 +108,7 @@ module Ungulate
       its(:bucket) { should == @bucket }
       its(:key) { should == 'path/to/filename.gif' }
       its(:versions) { should == @versions }
+      its(:notification_url) { should == 'http://some.host/with/simple/path' }
     end
 
     describe :source do
@@ -175,6 +177,7 @@ module Ungulate
         job.stub(:bucket).and_return(@bucket)
         job.stub(:version_key).with(:big).and_return('path/to/someimage_big.jpg')
         job.stub(:version_key).with(:little).and_return('path/to/someimage_little.jpg')
+        job.stub(:send_notification)
         job
       end
 
@@ -203,12 +206,42 @@ module Ungulate
                                           expected_headers)
       end
 
+      it "should notify" do
+        subject.should_receive(:send_notification)
+      end
+
       context "empty array" do
         before do
           subject.stub(:processed_versions).and_return([])
         end
 
         it "should not break" do
+        end
+      end
+    end
+
+    describe :send_notification do
+      after { subject.send_notification }
+
+      context "notification URL provided" do
+        before do
+          subject.stub(:notification_url).and_return('http://some.host/processing_images/some/path')
+        end
+
+        it "should PUT to the URL" do
+          http = mock('Net::HTTP')
+          Net::HTTP.stub(:start).with('some.host').and_yield(http)
+          http.should_receive(:put).with('/processing_images/some/path', nil)
+        end
+      end
+
+      context "notification URL not provided" do
+        before do
+          subject.stub(:notification_url).and_return(nil)
+        end
+
+        it "should not PUT" do
+          Net::HTTP.should_not_receive(:put)
         end
       end
     end

@@ -6,7 +6,7 @@ require 'yaml'
 
 module Ungulate
   class Job
-    attr_accessor :bucket, :key, :queue, :versions
+    attr_accessor :bucket, :key, :notification_url, :queue, :versions
 
     def self.s3
       @s3 ||=
@@ -37,6 +37,7 @@ module Ungulate
     def attributes=(options)
       self.bucket = Job.s3.bucket(options[:bucket])
       self.key = options[:key]
+      self.notification_url = options[:notification_url]
       self.versions = options[:versions]
     end
 
@@ -78,6 +79,19 @@ module Ungulate
           }
         )
         image.destroy!
+      end
+      send_notification
+    end
+
+    def send_notification
+      return false if notification_url.blank?
+
+      @logger.info "Sending notification to #{notification_url}"
+
+      url = URI.parse(notification_url)
+
+      Net::HTTP.start(url.host) do |http|
+        http.put(url.path, nil)
       end
     end
 
