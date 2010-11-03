@@ -181,11 +181,10 @@ module Ungulate
         job
       end
 
-      after { subject.process }
-
       it "should destroy the image objects" do
         @big.should_receive(:destroy!)
         @little.should_receive(:destroy!)
+        subject.process
       end
 
       it "should send each processed version to S3" do
@@ -204,10 +203,22 @@ module Ungulate
                                           {},
                                           'public-read',
                                           expected_headers)
+        subject.process
       end
 
       it "should notify" do
         subject.should_receive(:send_notification)
+        subject.process
+      end
+
+      context "send_notification returns false" do
+        before do
+          subject.stub(:send_notification).and_return(false)
+        end
+
+        it "should return true" do
+          subject.process.should be_true
+        end
       end
 
       context "empty array" do
@@ -216,6 +227,7 @@ module Ungulate
         end
 
         it "should not break" do
+          subject.process
         end
       end
     end

@@ -64,6 +64,7 @@ module Ungulate
 
     def process
       return false if processed_versions.empty?
+
       processed_versions.each do |version, image|
         version_key = version_key version
         @logger.info "Storing #{version} @ #{version_key}"
@@ -80,7 +81,10 @@ module Ungulate
         )
         image.destroy!
       end
+
       send_notification
+
+      true
     end
 
     def send_notification
