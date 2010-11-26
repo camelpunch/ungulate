@@ -1,4 +1,4 @@
-require 'active_support'
+require 'active_support/all'
 class Ungulate::FileUpload
   attr_accessor(
     :bucket_url,
