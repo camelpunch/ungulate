@@ -14,7 +14,6 @@ HTML
     close_form = "\n</div>\n</form>\n"
 
     if respond_to?(:safe_concat)
-      debugger if $debug
       content = capture(&block)
       output = ActiveSupport::SafeBuffer.new
       output.safe_concat(open_form.html_safe)
