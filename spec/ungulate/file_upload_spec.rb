@@ -58,7 +58,7 @@ module Ungulate
           and_return([ ['colour', 'blue'], ['predicate', 'subject', 'object'] ])
       end
 
-      it "should return the value of a tuple" do
+      it "should return value of index 1 in a two-item array" do
         subject.condition('colour').should == 'blue'
       end
 
