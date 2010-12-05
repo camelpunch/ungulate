@@ -115,7 +115,15 @@ module Ungulate
       end
 
       it "should ensure the expiration is utc" do
-        @expiration.should_receive(:utc).at_least(:once)
+        utc_time = Time.now.utc
+
+        @expiration.stub(:utc).and_return(utc_time)
+        Base64.stub(:encode64).and_return('')
+
+        ActiveSupport::JSON.should_receive(:encode).
+          with(hash_including('expiration' => utc_time)).
+          any_number_of_times
+
         subject.policy = @policy
       end
     end
