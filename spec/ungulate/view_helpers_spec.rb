@@ -1,6 +1,6 @@
 require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 require 'ungulate/view_helpers'
-require 'active_support/all'
+require 'active_support/core_ext'
 
 class Rails2Includer
   include ViewHelpers

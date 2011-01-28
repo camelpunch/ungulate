@@ -1,3 +1,5 @@
+require 'ostruct'
+
 When /^I run Ungulate$/ do
   @errors = OpenStruct.new :write => ''
   $stderr = @errors

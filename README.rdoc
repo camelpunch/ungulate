@@ -28,4 +28,4 @@ http://wiki.github.com/camelpunch/ungulate/
 
 == Copyright
 
-Copyright (c) 2010 Camel Punch Limited. See LICENSE for details.
+Copyright (c) 2011 Camel Punch Limited. See LICENSE for details.
