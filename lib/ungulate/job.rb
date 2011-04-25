@@ -3,6 +3,7 @@ require 'right_aws'
 require 'RMagick'
 require 'mime/types'
 require 'yaml'
+require 'active_support/core_ext'
 
 module Ungulate
   class Job
