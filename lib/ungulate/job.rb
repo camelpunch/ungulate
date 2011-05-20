@@ -96,6 +96,7 @@ module Ungulate
       url = URI.parse(notification_url)
 
       Net::HTTP.start(url.host) do |http|
+        http.use_ssl = true if url.scheme == 'https'
         http.put(url.path, nil)
       end
     end

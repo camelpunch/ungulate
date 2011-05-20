@@ -235,15 +235,32 @@ module Ungulate
     describe :send_notification do
       after { subject.send_notification }
 
+      let(:http) { mock('Net::HTTP', :put => nil, :use_ssl= => nil) }
+
       context "notification URL provided" do
         before do
           subject.stub(:notification_url).and_return('http://some.host/processing_images/some/path')
         end
 
         it "should PUT to the URL" do
-          http = mock('Net::HTTP')
           Net::HTTP.stub(:start).with('some.host').and_yield(http)
           http.should_receive(:put).with('/processing_images/some/path', nil)
+        end
+      end
+
+      context "https notification URL provided" do
+        before do
+          subject.stub(:notification_url).and_return('https://some.host/processing_images/some/path')
+        end
+
+        it "should PUT to the URL" do
+          Net::HTTP.stub(:start).with('some.host').and_yield(http)
+          http.should_receive(:put).with('/processing_images/some/path', nil)
+        end
+
+        it "should use SSL" do
+          Net::HTTP.stub(:start).with('some.host').and_yield(http)
+          http.should_receive(:use_ssl=).with(true)
         end
       end
 
