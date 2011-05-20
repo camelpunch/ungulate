@@ -95,10 +95,9 @@ module Ungulate
 
       url = URI.parse(notification_url)
 
-      Net::HTTP.start(url.host) do |http|
-        http.use_ssl = true if url.scheme == 'https'
-        http.put(url.path, nil)
-      end
+      http = Net::HTTP.new(url.host, url.port)
+      http.use_ssl = true if url.scheme == 'https'
+      http.start {|http| http.put(url.path, nil) }
     end
 
     def version_key(version)

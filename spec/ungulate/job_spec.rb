@@ -235,7 +235,8 @@ module Ungulate
     describe :send_notification do
       after { subject.send_notification }
 
-      let(:http) { mock('Net::HTTP', :put => nil, :use_ssl= => nil) }
+      let(:http_instance) { mock('Net::HTTP', :start => nil) }
+      let(:http_block_instance) { mock('Net::HTTP', :put => nil) }
 
       context "notification URL provided" do
         before do
@@ -243,24 +244,27 @@ module Ungulate
         end
 
         it "should PUT to the URL" do
-          Net::HTTP.stub(:start).with('some.host').and_yield(http)
-          http.should_receive(:put).with('/processing_images/some/path', nil)
+          Net::HTTP.should_receive(:new).with('some.host', 80).and_return(http_instance)
+          http_instance.should_receive(:start).and_yield(http_block_instance)
+          http_block_instance.should_receive(:put).with('/processing_images/some/path', nil)
         end
       end
 
       context "https notification URL provided" do
         before do
           subject.stub(:notification_url).and_return('https://some.host/processing_images/some/path')
+          http_instance.stub(:use_ssl=)
         end
 
         it "should PUT to the URL" do
-          Net::HTTP.stub(:start).with('some.host').and_yield(http)
-          http.should_receive(:put).with('/processing_images/some/path', nil)
+          Net::HTTP.should_receive(:new).with('some.host', 443).and_return(http_instance)
+          http_instance.should_receive(:start).and_yield(http_block_instance)
+          http_block_instance.should_receive(:put).with('/processing_images/some/path', nil)
         end
 
         it "should use SSL" do
-          Net::HTTP.stub(:start).with('some.host').and_yield(http)
-          http.should_receive(:use_ssl=).with(true)
+          Net::HTTP.should_receive(:new).with('some.host', 443).and_return(http_instance)
+          http_instance.should_receive(:use_ssl=).with(true)
         end
       end
 
