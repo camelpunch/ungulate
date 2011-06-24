@@ -8,50 +8,56 @@ module Ungulate
     let(:key) { "new-file" }
     let(:access_key_id) { "asdf" }
     let(:secret_access_key) { 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o' }
-    let(:policy) do
-      {
-        "expiration" => expiration,
-        "conditions" => [
-          {"bucket" => "johnsmith" },
-          ["starts-with", "$key", "user/eric/"],
-          {"acl" => "public-read" },
-          {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
-          ["starts-with", "$Content-Type", "image/"],
-          {"x-amz-meta-uuid" => "14365123651274"},
-          ["starts-with", "$x-amz-meta-tag", ""] 
-        ]
-      }
-    end
+    let(:queue_name) { 'some-queue-name' }
 
     before do
       FileUpload.access_key_id = access_key_id
       FileUpload.secret_access_key = secret_access_key
-      FileUpload.queue_name = 'some-queue-name'
+      FileUpload.queue_name = queue_name
     end
 
-    subject do
-      FileUpload.new(
-        :bucket_url => bucket_url,
-        :policy => policy,
-        :key => key
-      )
-    end
-
-    its(:acl) { should == 'public-read' }
-    its(:bucket_url) { should == bucket_url }
-    its(:conditions) { should == [
-      ['bucket', 'johnsmith'], 
-      ['starts-with', '$key', 'user/eric/'],
-      ['acl', 'public-read'],
-      ['success_action_redirect', 'http://johnsmith.s3.amazonaws.com/successful_upload.html'],
-      ['starts-with', '$Content-Type', 'image/'],
-      ["x-amz-meta-uuid", "14365123651274"],
-      ["starts-with", "$x-amz-meta-tag", ""]
-    ] }
     its(:access_key_id) { should == access_key_id }
-    its(:key) { should == key }
-    its(:queue_name) { should == 'some-queue-name' }
-    its(:success_action_redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
+    its(:queue_name) { should == queue_name }
+    its(:secret_access_key) { should == secret_access_key }
+
+    context "policy set directly" do
+      let(:policy) do
+        {
+          "expiration" => expiration,
+          "conditions" => [
+            {"bucket" => "johnsmith" },
+            ["starts-with", "$key", "user/eric/"],
+            {"acl" => "public-read" },
+            {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
+            ["starts-with", "$Content-Type", "image/"],
+            {"x-amz-meta-uuid" => "14365123651274"},
+            ["starts-with", "$x-amz-meta-tag", ""]
+          ]
+        }
+      end
+
+      subject do
+        FileUpload.new(
+          :bucket_url => bucket_url,
+          :policy => policy,
+          :key => key
+        )
+      end
+
+      its(:acl) { should == 'public-read' }
+      its(:bucket_url) { should == bucket_url }
+      its(:conditions) { should == [
+        ['bucket', 'johnsmith'],
+        ['starts-with', '$key', 'user/eric/'],
+        ['acl', 'public-read'],
+        ['success_action_redirect', 'http://johnsmith.s3.amazonaws.com/successful_upload.html'],
+        ['starts-with', '$Content-Type', 'image/'],
+        ["x-amz-meta-uuid", "14365123651274"],
+        ["starts-with", "$x-amz-meta-tag", ""]
+      ] }
+      its(:key) { should == key }
+      its(:success_action_redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
+    end
 
     describe "condition" do
       before do
@@ -88,15 +94,13 @@ module Ungulate
     end
 
     describe "enqueue" do
-      before do
-        @q = mock('queue')
-        Ungulate::FileUpload.stub(:queue).and_return(@q)
-        @job_hash = mock('Hash', :to_yaml => :some_yaml)
-      end
+      let(:q) { stub 'queue' }
+      let(:job_hash) { stub('Hash', :to_yaml => :some_yaml) }
+      before { Ungulate::FileUpload.stub(:queue).and_return(q) }
 
       it "queues the yamlised version of the passed job hash" do
-        @q.should_receive(:send_message).with(:some_yaml)
-        Ungulate::FileUpload.enqueue(@job_hash)
+        q.should_receive(:send_message).with(:some_yaml)
+        Ungulate::FileUpload.enqueue(job_hash)
       end
     end
 
@@ -110,6 +114,21 @@ module Ungulate
     end
 
     describe "policy=" do
+      let(:policy) do
+        {
+          "expiration" => expiration,
+          "conditions" => [
+            {"bucket" => "johnsmith" },
+            ["starts-with", "$key", "user/eric/"],
+            {"acl" => "public-read" },
+            {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
+            ["starts-with", "$Content-Type", "image/"],
+            {"x-amz-meta-uuid" => "14365123651274"},
+            ["starts-with", "$x-amz-meta-tag", ""]
+          ]
+        }
+      end
+
       it "stores the ruby version for later use" do
         subject.policy = policy
         subject.instance_variable_get('@policy_ruby').should_not be_blank
@@ -135,27 +154,30 @@ module Ungulate
     end
 
     describe "queue" do
-      before do
-        sqs = mock('sqs')
-        FileUpload.queue_name = 'somequeuename'
-        FileUpload.access_key_id = 'someaccesskey'
-        FileUpload.secret_access_key = 'somesecret'
-        RightAws::SqsGen2.stub(:new).with('someaccesskey', 'somesecret').
-          and_return(sqs)
-        sqs.stub(:queue).with('somequeuename').and_return(:queue_instance)
+      let(:sqs) do
+        sqs = stub 'SQS'
+        sqs.stub(:queue).with(queue_name).and_return(:queue_instance)
+        sqs
       end
 
-      it "returns a queue instance" do
-        Ungulate::FileUpload.queue.should == :queue_instance
+      subject { Ungulate::FileUpload.queue }
+
+      before do
+        RightAws::SqsGen2.stub(:new).
+          with(access_key_id, secret_access_key).
+          and_return(sqs)
       end
+
+      it { should == :queue_instance }
     end
 
     describe "signature" do
+      let(:sha1) { stub 'SHA1' }
+
       before do
         subject.stub(:policy).and_return(:policy)
-        @sha1 = mock('SHA1')
-        OpenSSL::Digest::Digest.stub(:new).with('sha1').and_return(@sha1)
-        OpenSSL::HMAC.stub(:digest).with(@sha1, secret_access_key, :policy).and_return(:digest)
+        OpenSSL::Digest::Digest.stub(:new).with('sha1').and_return(sha1)
+        OpenSSL::HMAC.stub(:digest).with(sha1, secret_access_key, :policy).and_return(:digest)
         Base64.stub(:encode64).with(:digest).and_return("str\nipme\n")
       end
 

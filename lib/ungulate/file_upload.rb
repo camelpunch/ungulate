@@ -20,10 +20,13 @@ class Ungulate::FileUpload
     sqs.queue(queue_name)
   end
 
-  def initialize(params)
-    self.bucket_url = params[:bucket_url]
-    self.key = params[:key]
-    self.policy = params[:policy]
+  def initialize(options = {})
+    self.bucket_url = options[:bucket_url]
+    self.key = options[:key]
+
+    if options[:policy]
+      self.policy = options[:policy]
+    end
   end
 
   def acl
