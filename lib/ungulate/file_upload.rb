@@ -62,7 +62,7 @@ class Ungulate::FileUpload
   def signature
     Base64.encode64(
       OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'),
-                           secret_access_key, 
+                           secret_access_key,
                            policy)
     ).gsub("\n", '')
   end

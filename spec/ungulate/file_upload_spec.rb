@@ -82,11 +82,11 @@ module Ungulate
 
       it "converts mixed hash and array policy to nested arrays" do
         subject.
-          instance_variable_set('@policy_ruby', 
-                                { 
-                                  'conditions' => [ 
-                                    {'colour' => 'blue'}, 
-                                    ['predicate', 'subject', 'object'] 
+          instance_variable_set('@policy_ruby',
+                                {
+                                  'conditions' => [
+                                    {'colour' => 'blue'},
+                                    ['predicate', 'subject', 'object']
                                   ]
                                 })
         subject.conditions.should == [ ['colour', 'blue'], ['predicate', 'subject', 'object'] ]
