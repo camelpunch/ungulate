@@ -2,8 +2,7 @@ require 'active_support/core_ext/class/attribute_accessors'
 class Ungulate::FileUpload
   attr_accessor(
     :bucket_url,
-    :key,
-    :policy
+    :key
   )
 
   cattr_accessor(
@@ -41,11 +40,16 @@ class Ungulate::FileUpload
       @policy_ruby['conditions'].map {|condition| condition.to_a.flatten}
   end
 
-  def policy=(policy)
-    @policy_ruby = policy
-    @policy_ruby['expiration'] = @policy_ruby['expiration'].utc
-    policy_json = ActiveSupport::JSON.encode(@policy_ruby)
-    @policy = Base64.encode64(policy_json).gsub("\n", '')
+  def policy
+    Base64.encode64(
+      ActiveSupport::JSON.encode(@policy_ruby)
+    ).gsub("\n", '')
+  end
+
+  def policy=(new_policy)
+    new_policy['expiration'] = new_policy['expiration'].utc
+    @policy_ruby = new_policy
+    policy
   end
 
   def success_action_redirect

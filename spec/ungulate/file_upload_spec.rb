@@ -3,13 +3,14 @@ require 'ungulate/file_upload'
 
 module Ungulate
   describe FileUpload do
-    before do
-      @expiration = 10.hours.from_now
-      @bucket_url = "http://images.bob.com/"
-      @key = "new-file"
-
-      @policy = { 
-        "expiration" => @expiration,
+    let(:expiration) { 10.hours.from_now }
+    let(:bucket_url) { "http://images.bob.com/" }
+    let(:key) { "new-file" }
+    let(:access_key_id) { "asdf" }
+    let(:secret_access_key) { 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o' }
+    let(:policy) do
+      {
+        "expiration" => expiration,
         "conditions" => [
           {"bucket" => "johnsmith" },
           ["starts-with", "$key", "user/eric/"],
@@ -20,24 +21,24 @@ module Ungulate
           ["starts-with", "$x-amz-meta-tag", ""] 
         ]
       }
+    end
 
-      @access_key_id = "asdf"
-      @secret_access_key = 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o'
-      FileUpload.access_key_id = @access_key_id
-      FileUpload.secret_access_key = @secret_access_key
+    before do
+      FileUpload.access_key_id = access_key_id
+      FileUpload.secret_access_key = secret_access_key
       FileUpload.queue_name = 'some-queue-name'
     end
 
     subject do
       FileUpload.new(
-        :bucket_url => @bucket_url,
-        :policy => @policy,
-        :key => @key
+        :bucket_url => bucket_url,
+        :policy => policy,
+        :key => key
       )
     end
 
     its(:acl) { should == 'public-read' }
-    its(:bucket_url) { should == @bucket_url }
+    its(:bucket_url) { should == bucket_url }
     its(:conditions) { should == [
       ['bucket', 'johnsmith'], 
       ['starts-with', '$key', 'user/eric/'],
@@ -47,8 +48,8 @@ module Ungulate
       ["x-amz-meta-uuid", "14365123651274"],
       ["starts-with", "$x-amz-meta-tag", ""]
     ] }
-    its(:access_key_id) { should == @access_key_id }
-    its(:key) { should == @key }
+    its(:access_key_id) { should == access_key_id }
+    its(:key) { should == key }
     its(:queue_name) { should == 'some-queue-name' }
     its(:success_action_redirect) { should == 'http://johnsmith.s3.amazonaws.com/successful_upload.html' }
 
@@ -58,22 +59,22 @@ module Ungulate
           and_return([ ['colour', 'blue'], ['predicate', 'subject', 'object'] ])
       end
 
-      it "should return value of index 1 in a two-item array" do
+      it "returns value of index 1 in a two-item array" do
         subject.condition('colour').should == 'blue'
       end
 
-      it "should cope with missing attribute" do
+      it "copes with missing attribute" do
         subject.condition('bob').should be_nil
       end
     end
 
     describe "conditions" do
-      it "should memoize" do
+      it "memoizes" do
         subject.instance_variable_set('@conditions', :cache)
         subject.conditions.should == :cache
       end
 
-      it "should convert mixed hash and array policy to nested arrays" do
+      it "converts mixed hash and array policy to nested arrays" do
         subject.
           instance_variable_set('@policy_ruby', 
                                 { 
@@ -93,38 +94,43 @@ module Ungulate
         @job_hash = mock('Hash', :to_yaml => :some_yaml)
       end
 
-      it "should queue the yamlised version of the passed job hash" do
+      it "queues the yamlised version of the passed job hash" do
         @q.should_receive(:send_message).with(:some_yaml)
         Ungulate::FileUpload.enqueue(@job_hash)
       end
     end
 
+    describe "policy" do
+      it "returns base64 encoded JSON version of stored policy" do
+        subject.instance_variable_set('@policy_ruby', :some_policy)
+        ActiveSupport::JSON.stub(:encode).with(:some_policy).and_return(:json)
+        Base64.stub(:encode64).with(:json).and_return("ENCODED\nLINE\nLINE")
+        subject.policy.should == "ENCODEDLINELINE"
+      end
+    end
+
     describe "policy=" do
-      it "should store the ruby version for later use" do
-        subject.policy = @policy
+      it "stores the ruby version for later use" do
+        subject.policy = policy
         subject.instance_variable_get('@policy_ruby').should_not be_blank
       end
 
-      it "should store the base64 encoded JSON" do
-        subject # load subject without stubs
-
-        ActiveSupport::JSON.stub(:encode).with(@policy).and_return(:some_json)
-        Base64.stub(:encode64).with(:some_json).and_return("ENCODED\nLINE\nLINE")
-        subject.policy = @policy
-        subject.policy.should == "ENCODEDLINELINE"
-      end
-
-      it "should ensure the expiration is utc" do
+      it "ensures the expiration is utc" do
         utc_time = Time.now.utc
 
-        @expiration.stub(:utc).and_return(utc_time)
+        expiration.stub(:utc).and_return(utc_time)
         Base64.stub(:encode64).and_return('')
 
         ActiveSupport::JSON.should_receive(:encode).
           with(hash_including('expiration' => utc_time)).
           any_number_of_times
 
-        subject.policy = @policy
+        subject.policy = policy
+      end
+
+      it "returns the encoded policy" do
+        subject.stub(:policy).and_return(:encoded_policy)
+        subject.send(:policy=, policy).should == :encoded_policy
       end
     end
 
@@ -139,7 +145,7 @@ module Ungulate
         sqs.stub(:queue).with('somequeuename').and_return(:queue_instance)
       end
 
-      it "should return a queue instance" do
+      it "returns a queue instance" do
         Ungulate::FileUpload.queue.should == :queue_instance
       end
     end
@@ -149,11 +155,11 @@ module Ungulate
         subject.stub(:policy).and_return(:policy)
         @sha1 = mock('SHA1')
         OpenSSL::Digest::Digest.stub(:new).with('sha1').and_return(@sha1)
-        OpenSSL::HMAC.stub(:digest).with(@sha1, @secret_access_key, :policy).and_return(:digest)
+        OpenSSL::HMAC.stub(:digest).with(@sha1, secret_access_key, :policy).and_return(:digest)
         Base64.stub(:encode64).with(:digest).and_return("str\nipme\n")
       end
 
-      it "should return the stripped base64 encoded digest" do
+      it "returns the stripped base64 encoded digest" do
         subject.signature.should == "stripme"
       end
     end
