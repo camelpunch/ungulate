@@ -6,6 +6,7 @@ module Ungulate
     let(:source_image) { stub('Source Image', :destroy! => nil) }
     let(:processed_image_1) { stub('Image 1', :destroy! => nil) }
     let(:processed_image_2) { stub('Image 2', :destroy! => nil) }
+    let(:curl_easy) { stub('Curl::Easy', :body_str => body_str) }
 
     before do
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
@@ -18,6 +19,8 @@ module Ungulate
         :thumb => [ :resize_to_fit, 100, 200 ],
         :large => [ :resize_to_fit, 200, 300 ],
       }
+
+      Curl::Easy.stub(:http_get)
     end
 
     its(:versions) { should == [] }
@@ -139,6 +142,39 @@ module Ungulate
         subject.stub(:source).and_return(blob)
         Magick::Image.should_receive(:from_blob).with(blob).and_return([source_image])
         subject.source_image.should == source_image
+      end
+    end
+
+    describe :image_from_instruction do
+      let(:instruction) { [ :composite, url, 1, 2 ] }
+      let(:overlay) { stub('Overlay', :destroy! => nil) }
+
+      context "when an argument is a URL" do
+        let(:url) { 'https://www.some.url/' }
+        let(:body_str) { :blob }
+
+        it "converts the URL to an Image" do
+          Curl::Easy.should_receive(:http_get).with(url).and_return(curl_easy)
+          Magick::Image.should_receive(:from_blob).with(:blob).and_return(overlay)
+          source_image.should_receive(:composite).
+            with(overlay, 1, 2).
+            and_return(processed_image_1)
+
+          subject.image_from_instruction(source_image, instruction).
+            should == processed_image_1
+        end
+      end
+
+      context "when argument isn't a valid http URL" do
+        let(:url) { 'somethingwithhttpinit' }
+
+        it "passes the argument through to the method" do
+          source_image.should_receive(:composite).
+            with(url, 1, 2).
+            and_return(processed_image_1)
+
+          subject.image_from_instruction(source_image, instruction)
+        end
       end
     end
 
@@ -283,48 +319,13 @@ module Ungulate
     end
 
     describe :send_notification do
-      after { subject.send_notification }
-
-      let(:http_instance) { mock('Net::HTTP', :start => nil) }
-      let(:http_block_instance) { mock('Net::HTTP', :put => nil) }
+      let(:url) { 'https://some-url' }
 
       context "notification URL provided" do
-        before do
-          subject.stub(:notification_url).and_return('http://some.host/processing_images/some/path')
-        end
-
         it "should PUT to the URL" do
-          Net::HTTP.should_receive(:new).with('some.host', 80).and_return(http_instance)
-          http_instance.should_receive(:start).and_yield(http_block_instance)
-          http_block_instance.should_receive(:put).with('/processing_images/some/path', nil)
-        end
-      end
-
-      context "https notification URL provided" do
-        before do
-          subject.stub(:notification_url).and_return('https://some.host/processing_images/some/path')
-          http_instance.stub(:use_ssl=)
-        end
-
-        it "should PUT to the URL" do
-          Net::HTTP.should_receive(:new).with('some.host', 443).and_return(http_instance)
-          http_instance.should_receive(:start).and_yield(http_block_instance)
-          http_block_instance.should_receive(:put).with('/processing_images/some/path', nil)
-        end
-
-        it "should use SSL" do
-          Net::HTTP.should_receive(:new).with('some.host', 443).and_return(http_instance)
-          http_instance.should_receive(:use_ssl=).with(true)
-        end
-      end
-
-      context "notification URL not provided" do
-        before do
-          subject.stub(:notification_url).and_return(nil)
-        end
-
-        it "should not PUT" do
-          Net::HTTP.should_not_receive(:put)
+          subject.stub(:notification_url).and_return(url)
+          Curl::Easy.should_receive(:http_put).with(url, '')
+          subject.send_notification
         end
       end
     end

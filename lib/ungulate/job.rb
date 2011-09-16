@@ -4,6 +4,7 @@ require 'RMagick'
 require 'mime/types'
 require 'yaml'
 require 'active_support/core_ext'
+require 'curb'
 
 module Ungulate
   class Job
@@ -49,12 +50,24 @@ module Ungulate
         end
     end
 
+    def instruction_args(args)
+      args.map do |arg|
+        if arg.respond_to?(:match) && arg.match(/^http/)
+          Magick::Image.from_blob(Curl::Easy.http_get(arg).body_str)
+        else
+          arg
+        end
+      end
+    end
+
     def image_from_instruction(original, instruction)
       method, *args = instruction
+      send_args = instruction_args(args)
 
       @logger.info "Performing #{method} with #{args.join(', ')}"
-      original.send(method, *args).tap do |new_image|
+      original.send(method, *send_args).tap do |new_image|
         original.destroy!
+        send_args.select {|arg| arg.is_a?(Magick::Image)}.each(&:destroy!)
       end
     end
 
@@ -119,12 +132,7 @@ module Ungulate
       return false if notification_url.blank?
 
       @logger.info "Sending notification to #{notification_url}"
-
-      url = URI.parse(notification_url)
-
-      http = Net::HTTP.new(url.host, url.port)
-      http.use_ssl = true if url.scheme == 'https'
-      http.start {|http| http.put(url.path, nil) }
+      Curl::Easy.http_put(notification_url, '')
     end
 
     def version_key(version)
