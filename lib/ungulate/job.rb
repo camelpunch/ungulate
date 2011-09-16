@@ -45,39 +45,39 @@ module Ungulate
     def processed_versions
       @processed_versions ||=
         versions.map do |name, instruction|
-          [name, processed_image(image, instruction)]
+          [name, processed_image(source_image, instruction)]
         end
     end
 
-    def image_from_instruction(img, instruction)
+    def image_from_instruction(original, instruction)
       method, *args = instruction
+
       @logger.info "Performing #{method} with #{args.join(', ')}"
-      img.send(method, *args)
+      original.send(method, *args).tap do |new_image|
+        original.destroy!
+      end
     end
 
-    def image_from_instruction_chain(img, instructions)
-      if instructions.one?
-        image_from_instruction(img, instructions.first)
+    def image_from_instruction_chain(original, chain)
+      if chain.one?
+        image_from_instruction(original, chain.first)
       else
         image_from_instruction_chain(
-          image_from_instruction(img, instructions.shift),
-          instructions
+          image_from_instruction(original, chain.shift),
+          chain
         )
       end
     end
 
-    def processed_image(image, instruction)
-      return_image = if instruction.first.is_a?(Symbol)
-        image_from_instruction(image, instruction)
+    def processed_image(original, instruction)
+      if instruction.first.respond_to?(:entries)
+        image_from_instruction_chain(original, instruction)
       else
-        image_from_instruction_chain(image, instruction)
+        image_from_instruction(original, instruction)
       end
-
-      image.destroy!
-      return_image
     end
 
-    def image
+    def source_image
       Magick::Image.from_blob(source).first
     end
 

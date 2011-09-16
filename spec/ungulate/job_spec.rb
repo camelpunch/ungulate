@@ -4,6 +4,8 @@ require 'ungulate/job'
 module Ungulate
   describe Job do
     let(:source_image) { stub('Source Image', :destroy! => nil) }
+    let(:processed_image_1) { stub('Image 1', :destroy! => nil) }
+    let(:processed_image_2) { stub('Image 2', :destroy! => nil) }
 
     before do
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
@@ -136,7 +138,7 @@ module Ungulate
       it "returns a Magick::Image from the source" do
         subject.stub(:source).and_return(blob)
         Magick::Image.should_receive(:from_blob).with(blob).and_return([source_image])
-        subject.image.should == source_image
+        subject.source_image.should == source_image
       end
     end
 
@@ -148,13 +150,10 @@ module Ungulate
         }
       end
 
-      let(:processed_image_1) { stub('Image 1') }
-      let(:processed_image_2) { stub('Image 2') }
-
       before do
         subject.stub(:versions).and_return(versions)
         subject.stub(:key).and_return('someimage.jpg')
-        subject.stub(:image).and_return(source_image)
+        subject.stub(:source_image).and_return(source_image)
 
         source_image.stub(:resize_to_fit).with(100, 200).and_return(processed_image_1)
         source_image.stub(:resize_to_fill).with(64, 64).and_return(processed_image_2)
@@ -198,10 +197,18 @@ module Ungulate
           }
         end
 
-        it "chains the processing" do
+        before do
           source_image.stub(:method_1).and_return(processed_image_1)
           processed_image_1.stub(:method_2).and_return(processed_image_2)
+        end
+
+        it "chains the processing" do
           subject.processed_versions.should == [[:large, processed_image_2]]
+        end
+
+        it "destroys intermediate images" do
+          processed_image_1.should_receive(:destroy!)
+          subject.processed_versions
         end
       end
     end
