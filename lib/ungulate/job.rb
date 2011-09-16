@@ -45,13 +45,16 @@ module Ungulate
     def processed_versions
       @processed_versions ||=
         versions.map do |name, instruction|
-          method, x, y = instruction
-          image = Magick::Image.from_blob(source).first
-          @logger.info "Performing #{method} with #{x}, #{y}"
-          processed_image = image.send(method, x, y)
+          method, *args = instruction
+          @logger.info "Performing #{method} with #{args.join(', ')}"
+          processed_image = image.send(method, *args)
           image.destroy!
           [name, processed_image]
         end
+    end
+
+    def image
+      Magick::Image.from_blob(source).first
     end
 
     def source

@@ -3,6 +3,8 @@ require 'ungulate/job'
 
 module Ungulate
   describe Job do
+    let(:source_image) { stub('Image', :destroy! => nil) }
+
     before do
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
       ENV['AMAZON_SECRET_ACCESS_KEY'] = 'test-secret'
@@ -128,38 +130,59 @@ module Ungulate
       end
     end
 
+    describe :image do
+      let(:blob) { 'asdf' }
+
+      it "returns a Magick::Image from the source" do
+        subject.stub(:source).and_return(blob)
+        Magick::Image.should_receive(:from_blob).with(blob).and_return([source_image])
+        subject.image.should == source_image
+      end
+    end
+
     describe :processed_versions do
-      before do
-        @job = Job.new
-        versions = {
+      let(:versions) do
+        {
           :large => [ :resize_to_fit, 100, 200 ],
           :small => [ :resize_to_fill, 64, 64 ],
         }
-        @job.stub(:versions).and_return(versions)
-        @job.stub(:key).and_return('someimage.jpg')
-
-        @job.stub(:source).and_return(:data)
-        @source_image = mock('Image', :destroy! => nil)
-        Magick::Image.stub(:from_blob).with(:data).and_return([@source_image])
-
-        @source_image.stub(:resize_to_fit).with(100, 200).and_return(:large_image)
-        @source_image.stub(:resize_to_fill).with(64, 64).and_return(:small_image)
       end
 
-      context "result" do
-        subject { @job.processed_versions }
-        it { should include([:large, :large_image]) }
-        it { should include([:small, :small_image]) }
+      before do
+        subject.stub(:versions).and_return(versions)
+        subject.stub(:key).and_return('someimage.jpg')
+        subject.stub(:image).and_return(source_image)
+
+        source_image.stub(:resize_to_fit).with(100, 200).and_return(:large_image)
+        source_image.stub(:resize_to_fill).with(64, 64).and_return(:small_image)
       end
 
-      it "should destroy the image object" do
-        @source_image.should_receive(:destroy!)
-        @job.processed_versions
+      it "processes multiple versions" do
+        subject.processed_versions.should include([:large, :large_image])
+        subject.processed_versions.should include([:small, :small_image])
       end
 
-      it "should memoize" do
-        @job.instance_variable_set('@processed_versions', :cache)
-        @job.processed_versions.should == :cache
+      it "destroys the image object" do
+        source_image.should_receive(:destroy!)
+        subject.processed_versions
+      end
+
+      it "memoizes" do
+        subject.instance_variable_set('@processed_versions', :cache)
+        subject.processed_versions.should == :cache
+      end
+
+      context "with three 'method' arguments" do
+        let(:versions) do
+          { :large => [ :some_method, 'some-value', 1, 2 ] }
+        end
+
+        it "passes each value" do
+          source_image.should_receive(:some_method).
+            with('some-value', 1, 2).
+            and_return('new-blob')
+          subject.processed_versions.should == [[:large, 'new-blob']]
+        end
       end
     end
 
