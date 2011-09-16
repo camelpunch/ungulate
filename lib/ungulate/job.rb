@@ -45,12 +45,36 @@ module Ungulate
     def processed_versions
       @processed_versions ||=
         versions.map do |name, instruction|
-          method, *args = instruction
-          @logger.info "Performing #{method} with #{args.join(', ')}"
-          processed_image = image.send(method, *args)
-          image.destroy!
-          [name, processed_image]
+          [name, processed_image(image, instruction)]
         end
+    end
+
+    def image_from_instruction(img, instruction)
+      method, *args = instruction
+      @logger.info "Performing #{method} with #{args.join(', ')}"
+      img.send(method, *args)
+    end
+
+    def image_from_instruction_chain(img, instructions)
+      if instructions.one?
+        image_from_instruction(img, instructions.first)
+      else
+        image_from_instruction_chain(
+          image_from_instruction(img, instructions.shift),
+          instructions
+        )
+      end
+    end
+
+    def processed_image(image, instruction)
+      return_image = if instruction.first.is_a?(Symbol)
+        image_from_instruction(image, instruction)
+      else
+        image_from_instruction_chain(image, instruction)
+      end
+
+      image.destroy!
+      return_image
     end
 
     def image

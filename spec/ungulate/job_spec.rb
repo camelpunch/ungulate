@@ -3,7 +3,7 @@ require 'ungulate/job'
 
 module Ungulate
   describe Job do
-    let(:source_image) { stub('Image', :destroy! => nil) }
+    let(:source_image) { stub('Source Image', :destroy! => nil) }
 
     before do
       ENV['AMAZON_ACCESS_KEY_ID'] = 'test-key-id'
@@ -148,18 +148,21 @@ module Ungulate
         }
       end
 
+      let(:processed_image_1) { stub('Image 1') }
+      let(:processed_image_2) { stub('Image 2') }
+
       before do
         subject.stub(:versions).and_return(versions)
         subject.stub(:key).and_return('someimage.jpg')
         subject.stub(:image).and_return(source_image)
 
-        source_image.stub(:resize_to_fit).with(100, 200).and_return(:large_image)
-        source_image.stub(:resize_to_fill).with(64, 64).and_return(:small_image)
+        source_image.stub(:resize_to_fit).with(100, 200).and_return(processed_image_1)
+        source_image.stub(:resize_to_fill).with(64, 64).and_return(processed_image_2)
       end
 
       it "processes multiple versions" do
-        subject.processed_versions.should include([:large, :large_image])
-        subject.processed_versions.should include([:small, :small_image])
+        subject.processed_versions.should include([:large, processed_image_1])
+        subject.processed_versions.should include([:small, processed_image_2])
       end
 
       it "destroys the image object" do
@@ -180,8 +183,25 @@ module Ungulate
         it "passes each value" do
           source_image.should_receive(:some_method).
             with('some-value', 1, 2).
-            and_return('new-blob')
-          subject.processed_versions.should == [[:large, 'new-blob']]
+            and_return(processed_image_1)
+          subject.processed_versions.should == [[:large, processed_image_1]]
+        end
+      end
+
+      context "with multiple instructions in a version" do
+        let(:versions) do
+          {
+            :large => [
+              [ :method_1, 'value-1' ],
+              [ :method_2, 'value-2' ]
+            ]
+          }
+        end
+
+        it "chains the processing" do
+          source_image.stub(:method_1).and_return(processed_image_1)
+          processed_image_1.stub(:method_2).and_return(processed_image_2)
+          subject.processed_versions.should == [[:large, processed_image_2]]
         end
       end
     end
