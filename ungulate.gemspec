@@ -44,5 +44,6 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('rspec', [">= 2.4.0"])
   gem.add_development_dependency('cucumber', [">= 0.10.0"])
   gem.add_development_dependency('i18n', [">= 0.5.0"])
+  gem.add_development_dependency('ruby-debug')
 end
 
