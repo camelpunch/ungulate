@@ -146,18 +146,24 @@ module Ungulate
     end
 
     describe :image_from_instruction do
-      let(:instruction) { [ :composite, url, 1, 2 ] }
+      let(:instruction) { [ :composite, url, arg1, arg2 ] }
       let(:overlay) { stub('Overlay', :destroy! => nil) }
+      let(:arg1) { 1 }
+      let(:arg2) { 2 }
+      let(:url) { 'https://www.some.url/' }
+      let(:body_str) { 'blob' }
+
+      before do
+        Curl::Easy.stub(:http_get).and_return(curl_easy)
+        Magick::Image.stub(:from_blob).and_return([overlay])
+      end
 
       context "when an argument is a URL" do
-        let(:url) { 'https://www.some.url/' }
-        let(:body_str) { :blob }
-
         it "converts the URL to an Image" do
           Curl::Easy.should_receive(:http_get).with(url).and_return(curl_easy)
-          Magick::Image.should_receive(:from_blob).with(:blob).and_return(overlay)
+          Magick::Image.should_receive(:from_blob).with('blob').and_return([overlay])
           source_image.should_receive(:composite).
-            with(overlay, 1, 2).
+            with(overlay, arg1, arg2).
             and_return(processed_image_1)
 
           subject.image_from_instruction(source_image, instruction).
@@ -170,7 +176,20 @@ module Ungulate
 
         it "passes the argument through to the method" do
           source_image.should_receive(:composite).
-            with(url, 1, 2).
+            with(url, arg1, arg2).
+            and_return(processed_image_1)
+
+          subject.image_from_instruction(source_image, instruction)
+        end
+      end
+
+      context "when arguments are symbols" do
+        let(:arg1) { :center_gravity }
+        let(:arg2) { :soft_light_composite_op }
+
+        it "converts the symbols to Magick::XxXx constants" do
+          source_image.should_receive(:composite).
+            with(anything, Magick::CenterGravity, Magick::SoftLightCompositeOp).
             and_return(processed_image_1)
 
           subject.image_from_instruction(source_image, instruction)

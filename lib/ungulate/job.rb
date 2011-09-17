@@ -52,8 +52,10 @@ module Ungulate
 
     def instruction_args(args)
       args.map do |arg|
-        if arg.respond_to?(:match) && arg.match(/^http/)
-          Magick::Image.from_blob(Curl::Easy.http_get(arg).body_str)
+        if arg.is_a?(Symbol)
+          "Magick::#{arg.to_s.classify}".constantize
+        elsif arg.respond_to?(:match) && arg.match(/^http/)
+          Magick::Image.from_blob(Curl::Easy.http_get(arg).body_str).first
         else
           arg
         end

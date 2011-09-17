@@ -30,3 +30,24 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
   @q.send_message(message)
 end
 
+Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |key, composite_url|
+  @bucket_name = "ungulate-test"
+
+  @s3 = RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
+                         ENV['AMAZON_SECRET_ACCESS_KEY'])
+  @bucket = @s3.bucket @bucket_name
+  @bucket.put key, File.open('features/camels.jpg').read
+
+  message = {
+    :bucket => @bucket_name,
+    :key => key,
+    :versions => {
+      :watermarked => [
+        [:resize_to_fill, 100, 100],
+        [:composite, composite_url, :center_gravity, :soft_light_composite_op]
+      ]
+    }
+  }.to_yaml
+
+  @q.send_message(message)
+end
