@@ -54,7 +54,11 @@ module Ungulate
     end
 
     def blob_from_url(url)
-      Job.blobs_from_urls[url] ||= Curl::Easy.http_get(url).body_str
+      Job.blobs_from_urls[url] ||=
+        begin
+          @logger.info "Grabbing blob from URL #{url}"
+          Curl::Easy.http_get(url).body_str
+        end
     end
 
     def magick_image_from_url(url)
