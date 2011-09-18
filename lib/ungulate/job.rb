@@ -10,6 +10,9 @@ module Ungulate
   class Job
     attr_accessor :bucket, :key, :notification_url, :queue, :versions
 
+    @@blobs_from_urls = {}
+    cattr_accessor :blobs_from_urls
+
     def self.s3
       @s3 ||=
         RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
@@ -50,12 +53,20 @@ module Ungulate
         end
     end
 
+    def blob_from_url(url)
+      Job.blobs_from_urls[url] ||= Curl::Easy.http_get(url).body_str
+    end
+
+    def magick_image_from_url(url)
+      Magick::Image.from_blob(blob_from_url(url)).first
+    end
+
     def instruction_args(args)
       args.map do |arg|
         if arg.is_a?(Symbol)
           "Magick::#{arg.to_s.classify}".constantize
         elsif arg.respond_to?(:match) && arg.match(/^http/)
-          Magick::Image.from_blob(Curl::Easy.http_get(arg).body_str).first
+          magick_image_from_url(arg)
         else
           arg
         end

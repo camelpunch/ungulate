@@ -156,6 +156,7 @@ module Ungulate
       before do
         Curl::Easy.stub(:http_get).and_return(curl_easy)
         Magick::Image.stub(:from_blob).and_return([overlay])
+        source_image.stub(:composite).and_return(processed_image_1)
       end
 
       context "when an argument is a URL" do
@@ -168,6 +169,19 @@ module Ungulate
 
           subject.image_from_instruction(source_image, instruction).
             should == processed_image_1
+        end
+
+        it "caches the image blob in a hash for later reuse" do
+          subject.image_from_instruction(source_image, instruction)
+          Ungulate::Job.blobs_from_urls[url].should == 'blob'
+        end
+
+        context "image is already cached" do
+          it "reuses the cached image" do
+            subject.class.blobs_from_urls[url] = 'cachedblob'
+            Magick::Image.should_receive(:from_blob).with('cachedblob').and_return([overlay])
+            subject.image_from_instruction(source_image, instruction)
+          end
         end
       end
 
