@@ -3,40 +3,22 @@ require 'ungulate/server'
 
 module Ungulate
   describe Server do
-    describe "run" do
-      before do
-        @versions = {
-          :thumb => [ :resize_to_fit, 100, 200 ],
-          :large => [ :resize_to_fit, 200, 300 ],
-        }
+    let(:job) { double 'job' }
+    let(:queue_name) { 'queuename' }
 
-        @data = mock('Data')
-        @job = mock('Job', 
-                    :versions => @versions,
-                    :source => @data,
-                    :process => nil,
-                    :store => nil)
-
-        Job.stub(:pop).and_return(@job)
-
-        @image = mock('RMagick::Image')
-
-        @datum = mock('Datum')
-        @data_array = [@datum]
-
-        Magick::Image.stub(:from_blob).with(@data).and_return(@data_array)
+    shared_examples_for "an ungulate server" do
+      it "pops a job from the provided queue and processes it" do
+        Job.should_receive(:pop).with(queue_name).and_return(job)
+        job.should_receive(:process)
+        Server.run queue_name
       end
+    end
 
-      after { Ungulate::Server.run('queuename') }
+    it_behaves_like "an ungulate server"
 
-      it "should pop a job from the provided queue" do
-        Job.should_receive(:pop).with('queuename')
-      end
-
-      it "should process the job" do
-        @job.should_receive(:process)
-      end
+    context "with a different queue name" do
+      let(:queue_name) { 'otherqueuename' }
+      it_behaves_like "an ungulate server"
     end
   end
 end
-
