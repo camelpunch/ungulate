@@ -1,15 +1,22 @@
 require 'logger'
-require 'ungulate/job'
 
 module Ungulate
-  module Server
-    def self.logger
-      @logger ||= ::Logger.new STDOUT
+  class Server
+    def initialize(options = {})
+      @logger = options[:logger] || ::Logger.new($stdout)
+      @job_processor = options[:job_processor]
+      @queue = options[:queue]
     end
 
-    def self.run(queue_name)
-      logger.info "Checking for job on #{queue_name}"
-      Job.pop(queue_name).process
+    def run
+      @logger.info "Checking for job on #{@queue.name}"
+      message = @queue.receive
+
+      if message
+        success = @job_processor.process(message.to_s)
+        message.delete
+        success
+      end
     end
   end
 end

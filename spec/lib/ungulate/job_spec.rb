@@ -25,60 +25,117 @@ module Ungulate
 
     its(:versions) { should == [] }
 
-    describe :sqs do
-      before do
-        RightAws::SqsGen2.stub(:new).with('test-key-id', 'test-secret').and_return(@sqs)
+    context "new API" do
+      subject do
+        Job.new(:image_processor => image_processor, :storage => storage,
+                :http => http, :logger => ::Logger.new(nil))
       end
 
-      it "should return a SqsGen2 instance using environment variables" do
-        Job.sqs.should == @sqs
-      end
-
-      it "should memoize" do
-        Job.instance_variable_set('@sqs', :cache)
-        Job.sqs.should == :cache
-      end
-    end
-
-    describe :pop do
-      before do
-        @job_attributes = {
-          :bucket => 'test-bucket', 
-          :key => 'test-key', 
-          :versions => @versions
+      let(:http) { double 'http' }
+      let(:image_processor) { double 'image_processor' }
+      let(:storage) { double 'storage', :bucket => bucket }
+      let(:bucket) { double 'bucket', :retrieve => nil }
+      let(:versions) do
+        {
+          :large => [ :resize_to_fill, 400, 300 ],
+          :medium => [ :resize_to_fit, 300, 200 ],
+          :thumbnail => [ :resize_to_fit, 40, 20 ]
         }
+      end
+      let(:job_description) do
+        {
+          :bucket => 'some-bucket',
+          :key => 'original-key.jpg',
+          :versions => versions
+        }
+      end
+      let(:job_encoded) { job_description.to_yaml }
 
-        @sqs.stub(:queue).with('test-queue').and_return(@q)
+      it "gets an original blob and sends it to be processed" do
+        blob = double 'blob'
 
-        message = mock('Message', :to_s => :message_data)
+        storage.should_receive(:bucket).with('some-bucket').and_return(bucket)
+        bucket.should_receive(:retrieve).with('original-key.jpg').and_return(blob)
 
-        @q.stub(:pop).and_return(message)
-        YAML.stub(:load).with(:message_data).and_return(:attributes)
+        image_processor.should_receive(:process).
+          with(:blob => blob, :versions => versions, :bucket => bucket,
+               :listener => subject)
 
-        Job.stub(:sqs).and_return(@sqs)
-        Job.stub(:s3).and_return(@s3)
-
-        @job = mock('Job', :attributes= => nil, :queue= => nil, :queue => @q)
-        Job.stub(:new).and_return(@job)
+        subject.process(job_encoded)
       end
 
-      after { Job.pop('test-queue') }
+      context "with no notification URL" do
+        it "accepts storage complete messages, but does nothing" do
+          storage.stub(:get)
+          image_processor.stub(:process)
+          subject.process(job_encoded)
+          subject.storage_complete(:large)
+          subject.storage_complete(:medium)
 
-      it "should set attributes" do
-        @job.should_receive(:attributes=).with(:attributes)
+          http.should_not_receive(:put)
+          subject.storage_complete(:thumbnail)
+        end
       end
 
-      it "should set the queue" do
-        @job.should_receive(:queue=).with(@q)
-      end
-
-      context "when YAML.load returns false" do
-        before do
-          YAML.stub(:load).with(:message_data).and_return(false)
+      context "when notification URL set" do
+        let(:job_description) do
+          {
+            :bucket => 'some-bucket',
+            :key => 'original-key.jpg',
+            :notification_url => 'http://some.url',
+            :versions => versions
+          }
         end
 
-        it "should not set attributes" do
-          @job.should_not_receive(:attributes=)
+        before do
+          storage.stub(:get)
+          image_processor.stub(:process)
+          subject.process(job_encoded)
+        end
+
+        context "with only one version" do
+          let(:versions) { { :large => [ :resize_to_fill, 400, 300 ] } }
+
+          it "PUTs to the notification URL when only version stored" do
+            http.should_receive(:put).with('http://some.url')
+            subject.storage_complete(:large)
+          end
+        end
+
+        context "with three versions" do
+          let(:versions) do
+            {
+              :large => [ :resize_to_fill, 400, 300 ],
+              :medium => [ :resize_to_fit, 300, 200 ],
+              :thumbnail => [ :resize_to_fit, 40, 20 ]
+            }
+          end
+
+          it "PUTs to the notification URL when third version stored" do
+            subject.storage_complete(:large)
+            subject.storage_complete(:medium)
+
+            http.should_receive(:put).with('http://some.url')
+            subject.storage_complete(:thumbnail)
+          end
+        end
+
+        context "with a different URL" do
+          let(:job_description) do
+            {
+              :bucket => 'some-bucket',
+              :key => 'original-key.jpg',
+              :notification_url => 'http://some.other.url',
+              :versions => versions
+            }
+          end
+
+          it "uses the other URL" do
+            subject.storage_complete(:large)
+            subject.storage_complete(:medium)
+            http.should_receive(:put).with('http://some.other.url')
+            subject.storage_complete(:thumbnail)
+          end
         end
       end
     end
@@ -96,26 +153,6 @@ module Ungulate
         Job.instance_variable_set('@s3', :cache)
         Job.s3.should == :cache
       end
-    end
-
-    describe :attributes= do
-      subject do
-        Job.stub_chain(:s3, :bucket).with('hello').and_return(@bucket)
-
-        job = Job.new
-        job.attributes = { 
-          :bucket => 'hello', 
-          :key => 'path/to/filename.gif', 
-          :versions => @versions,
-          :notification_url => 'http://some.host/with/simple/path',
-        }
-        job
-      end
-
-      its(:bucket) { should == @bucket }
-      its(:key) { should == 'path/to/filename.gif' }
-      its(:versions) { should == @versions }
-      its(:notification_url) { should == 'http://some.host/with/simple/path' }
     end
 
     describe :source do
@@ -284,6 +321,7 @@ module Ungulate
 
     describe :process do
       before do
+        pending
         @big = mock('Image', :destroy! => nil, :to_blob => 'bigdata', :format => 'JPEG')
         @little = mock('Image', :destroy! => nil, :to_blob => 'littledata', :format => 'JPEG')
         @mime_type = mock('MimeType', :to_s => 'image/jpeg')

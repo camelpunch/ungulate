@@ -5,6 +5,7 @@ Feature: Image resize
 
   Background:
     Given an empty queue
+    And an empty bucket
 
   Scenario: Run queue on image key with no path separator
     Given a request to resize "image.jpg" to sizes:

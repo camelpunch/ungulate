@@ -7,7 +7,7 @@ if ARGV[0].nil?
   exit 1
 end
 
-logger = Logger.new STDERR
+logger = Logger.new $stderr
 
 loop do
   begin

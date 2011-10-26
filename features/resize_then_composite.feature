@@ -5,6 +5,7 @@ Feature: Image resize
 
   Scenario: Run queue on image key with no path separator
     Given an empty queue
+    And an empty bucket
     And a request to resize "image.jpg" and then composite with "https://dmxno528jhfy0.cloudfront.net/superhug-watermark.png"
     When I run Ungulate
     Then there should be a public watermarked version

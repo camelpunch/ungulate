@@ -25,19 +25,70 @@ module Ungulate
                               ENV['AMAZON_SECRET_ACCESS_KEY'])
     end
 
-    def self.pop(queue_name)
-      job = new
-      job.queue = sqs.queue queue_name
-      message = job.queue.pop
-      attributes = YAML.load message.to_s
-      job.attributes = attributes if attributes
-      job
-    end
-
-    def initialize
-      @logger = Ungulate::Server.logger
+    def initialize(options = {})
+      @logger = options[:logger] || ::Logger.new($stdout)
+      @image_processor = options[:image_processor]
+      @storage = options[:storage]
+      @http = options[:http]
       self.versions = []
     end
+
+    def process(encoded_job = nil)
+      if encoded_job
+        @attributes = YAML.load(encoded_job)
+        bucket = @storage.bucket(@attributes[:bucket])
+        versions = @attributes[:versions]
+        blob = bucket.retrieve(@attributes[:key])
+
+        @image_processor.process(
+          :blob => blob, :versions => versions,
+          :bucket => bucket, :listener => self
+        )
+      else
+        return false if processed_versions.empty?
+
+        processed_versions.each do |version, image|
+          version_key = version_key version
+          @logger.info "Storing #{version} @ #{version_key}"
+          bucket.put(
+            version_key, 
+            image.to_blob, 
+            {},
+            'public-read',
+            {
+            'Content-Type' => MIME::Types.type_for(image.format).to_s,
+            # expire in about one month: refactor to grab from job description
+            'Cache-Control' => 'max-age=2629743',
+          }
+          )
+          image.destroy!
+        end
+
+        send_notification
+
+        true
+      end
+    end
+
+    def storage_complete(version)
+      stored_versions << version
+
+      if @attributes[:notification_url] && stored_versions == versions_to_process
+        @http.put @attributes[:notification_url]
+      end
+    end
+
+    protected
+
+    def stored_versions
+      @stored_versions ||= Set.new
+    end
+
+    def versions_to_process
+      @versions_to_process ||= Set.new @attributes[:versions].keys
+    end
+
+    public
 
     def attributes=(options)
       self.bucket = Job.s3.bucket(options[:bucket])
@@ -118,31 +169,6 @@ module Ungulate
         @logger.info "Grabbing source image #{key}"
         @source = bucket.get key
       end
-    end
-
-    def process
-      return false if processed_versions.empty?
-
-      processed_versions.each do |version, image|
-        version_key = version_key version
-        @logger.info "Storing #{version} @ #{version_key}"
-        bucket.put(
-          version_key, 
-          image.to_blob, 
-          {},
-          'public-read',
-          {
-            'Content-Type' => MIME::Types.type_for(image.format).to_s,
-            # expire in about one month: refactor to grab from job description
-            'Cache-Control' => 'max-age=2629743',
-          }
-        )
-        image.destroy!
-      end
-
-      send_notification
-
-      true
     end
 
     def send_notification
