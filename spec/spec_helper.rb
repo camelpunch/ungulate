@@ -1,6 +1,5 @@
 require 'ungulate'
 require 'rspec'
-require 'active_support/core_ext/string'
 
 RSpec.configure do |config|
   def clear(queue)

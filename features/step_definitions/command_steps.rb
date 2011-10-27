@@ -20,7 +20,9 @@ When /^I run Ungulate$/ do
   Ungulate::Server.new(
     :queue => queue,
     :job_processor => Ungulate::Job.new(
-      :image_processor => Ungulate::RmagickImageProcessor.new,
+      :blob_processor => Ungulate::BlobProcessor.new(
+        :version_creator => Ungulate::RmagickVersionCreator.new
+      ),
       :storage => storage,
       :http => Ungulate::CurlHttp.new
   )).run

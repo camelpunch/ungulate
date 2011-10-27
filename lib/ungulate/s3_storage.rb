@@ -13,10 +13,13 @@ module Ungulate
     def initialize(s3, name, options = {})
       @bucket = s3.bucket(name)
       @listener = options[:listener]
+      @logger = options[:logger] || ::Logger.new($stdout)
     end
 
     def store(key, value, options = {})
-      @bucket.put(key, value)
+      @logger.info "Storing #{key} with value of size #{value.size}"
+
+      @bucket.put(key, value, {}, 'public-read')
 
       if @listener && options[:version]
         @listener.storage_complete(options[:version])

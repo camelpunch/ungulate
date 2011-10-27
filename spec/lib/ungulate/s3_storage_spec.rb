@@ -32,6 +32,15 @@ module Ungulate
         retrieve('somekey').should == 'somedata'
     end
 
+    it "stores publicly accessible items" do
+      bucket = subject.bucket('ungulate-test')
+      bucket.clear
+      bucket.store('somekey', 'somedata')
+
+      Curl::Easy.http_get("ungulate-test.s3.amazonaws.com/somekey").body_str.
+        should == 'somedata'
+    end
+
     context "when listener set" do
       it "notifies the listener when it's done" do
         listener = double 'listener'
