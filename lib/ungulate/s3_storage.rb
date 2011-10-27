@@ -17,7 +17,7 @@ module Ungulate
     end
 
     def store(key, value, options = {})
-      @logger.info "Storing #{key} with value of size #{value.size}"
+      @logger.info "Storing #{key} with size #{value.size}, content-type #{options[:content_type]}"
 
       @bucket.put(key, value, {}, 'public-read', {
         'Content-Type' => options[:content_type],
@@ -30,6 +30,7 @@ module Ungulate
     end
 
     def retrieve(key)
+      @logger.info "Retrieving #{key}"
       @bucket.get(key)
     end
 

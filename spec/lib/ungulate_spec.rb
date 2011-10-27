@@ -12,5 +12,13 @@ describe Ungulate do
         config.should == Ungulate::configuration
       end
     end
+
+    it "allows setting and retrieving values" do
+      Ungulate.configure do |config|
+        config.bob = 'tree'
+      end
+
+      Ungulate.configuration.bob.should == 'tree'
+    end
   end
 end

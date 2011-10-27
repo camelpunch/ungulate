@@ -21,11 +21,7 @@ module Ungulate
 
     def blob_from_url(url)
       @blobs_from_urls ||= {}
-      @blobs_from_urls[url] ||=
-        begin
-          @logger.info "Grabbing blob from URL #{url}"
-          @http.get_body(url)
-        end
+      @blobs_from_urls[url] ||= @http.get_body(url)
     end
 
     def magick_image_from_url(url)

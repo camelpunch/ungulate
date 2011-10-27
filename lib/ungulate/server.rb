@@ -8,6 +8,19 @@ module Ungulate
       @queue = options[:queue]
     end
 
+    class << self
+      def config
+        Ungulate.configuration
+      end
+
+      def run
+        new(
+          :job_processor => config.job_processor.call,
+          :queue => config.queue.call
+        ).run
+      end
+    end
+
     def run
       @logger.info "Checking for job on #{@queue.name}"
       message = @queue.receive

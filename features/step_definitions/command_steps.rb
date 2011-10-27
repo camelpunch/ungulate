@@ -5,32 +5,13 @@ When /^I run Ungulate$/ do
   @errors = OpenStruct.new :write => ''
   $stderr = @errors
 
-  queue = Ungulate::SqsMessageQueue.new(
-    QUEUE_NAME,
-    :access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
-    :secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY'],
-    :server => sqs_server
-  )
-
-  storage = Ungulate::S3Storage.new(
-    :access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
-    :secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY']
-  )
-
-  server = Ungulate::Server.new(
-    :queue => queue,
-    :job_processor => Ungulate::Job.new(
-      :blob_processor => Ungulate::BlobProcessor.new(
-        :version_creator => Ungulate::RmagickVersionCreator.new(
-          :http => Ungulate::CurlHttp.new
-        )
-      ),
-      :storage => storage,
-      :http => Ungulate::CurlHttp.new
-  ))
+  Ungulate.configure do |config|
+    config.queue_name = QUEUE_NAME
+    config.queue_server = sqs_server
+  end
 
   10.times do
-    break if server.run
+    break if Ungulate::Server.run
   end
 end
 

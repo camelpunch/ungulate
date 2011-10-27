@@ -20,5 +20,9 @@ module Ungulate
     end
 
     it_behaves_like "a message queue"
+
+    it "raises an exception if queue name not set" do
+      expect { SqsMessageQueue.new('', {}) }.to raise_error(MissingConfiguration)
+    end
   end
 end

@@ -3,6 +3,11 @@ require 'right_aws'
 module Ungulate
   class SqsMessageQueue
     def initialize(name, options)
+      if name.blank?
+        raise Ungulate::MissingConfiguration,
+          "queue_name must be set in config"
+      end
+
       sqs = RightAws::SqsGen2.new(
         options[:access_key_id], options[:secret_access_key],
         :server => options[:server]
