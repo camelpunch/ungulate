@@ -17,7 +17,7 @@ module Ungulate
 
     shared_examples_for "an image converter" do
       it "creates a matching blob" do
-        new_blob = subject.create(original, instructions)
+        new_blob = subject.create(original, instructions)[:blob]
 
         expected_image = Magick::Image.from_blob(converted).first
         got_image = Magick::Image.from_blob(new_blob).first
@@ -34,6 +34,22 @@ module Ungulate
 
         expected_image.destroy!
         got_image.destroy!
+      end
+
+      context "for a png" do
+        it "includes image/png as the content-type in the return hash" do
+          subject.create(original, instructions)[:content_type].
+            should == 'image/png'
+        end
+      end
+
+      context "for a jpeg" do
+        let(:original) { fixture 'chuckle.jpg' }
+
+        it "includes image/jpeg as the content-type in the return hash" do
+          subject.create(original, instructions)[:content_type].
+            should == 'image/jpeg'
+        end
       end
     end
 
@@ -60,21 +76,22 @@ module Ungulate
       it_behaves_like "an image converter"
 
       it "doesn't compare well with a broken image" do
-        expected_image = Magick::Image.from_blob(converted).first
+        new_blob = subject.create(original, instructions)[:blob]
+        got_image = Magick::Image.from_blob(new_blob).first
         bad_image = Magick::Image.from_blob(bad).first
 
-        expected_image.difference(bad_image)
+        bad_image.difference(got_image)
 
         puts "bad image:"
-        puts "mean per pixel: #{expected_image.mean_error_per_pixel}"
-        puts "normalized mean: #{expected_image.normalized_mean_error}"
-        puts "normalized max: #{expected_image.normalized_maximum_error}"
+        puts "mean per pixel: #{bad_image.mean_error_per_pixel}"
+        puts "normalized mean: #{bad_image.normalized_mean_error}"
+        puts "normalized max: #{bad_image.normalized_maximum_error}"
 
-        expected_image.mean_error_per_pixel.round.should > 0
-        expected_image.normalized_maximum_error.round.should > 0
+        bad_image.mean_error_per_pixel.round.should > 0
+        bad_image.normalized_maximum_error.round.should > 0
 
-        expected_image.destroy!
         bad_image.destroy!
+        got_image.destroy!
       end
     end
   end

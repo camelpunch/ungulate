@@ -32,13 +32,23 @@ module Ungulate
         retrieve('somekey').should == 'somedata'
     end
 
-    it "stores publicly accessible items" do
+    it "stores publicly accessible items with a long cache expiry" do
+      key = 'somekey'
       bucket = subject.bucket('ungulate-test')
       bucket.clear
-      bucket.store('somekey', 'somedata')
+      bucket.store(key, 'somedata')
 
-      Curl::Easy.http_get("ungulate-test.s3.amazonaws.com/somekey").body_str.
-        should == 'somedata'
+      response = Curl::Easy.http_get("ungulate-test.s3.amazonaws.com/#{key}")
+      response.header_str.should include('Cache-Control: max-age=2629743')
+    end
+
+    it "sets the correct content-type" do
+      key = 'somekey.png'
+      bucket = subject.bucket('ungulate-test')
+      bucket.clear
+      bucket.store(key, 'somedata', :content_type => 'image/png')
+      response = Curl::Easy.http_get("ungulate-test.s3.amazonaws.com/#{key}")
+      response.content_type.should == 'image/png'
     end
 
     context "when listener set" do

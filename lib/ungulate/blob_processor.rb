@@ -11,10 +11,13 @@ module Ungulate
       bucket = options.delete(:bucket)
 
       versions.each_pair do |name, instructions|
+        stored_data = @creator.create(blob, instructions)
+
         bucket.store(
           new_key(original_key, name),
-          @creator.create(blob, instructions),
-          :version => name
+          stored_data[:blob],
+          :version => name,
+          :content_type => stored_data[:content_type]
         )
       end
     end

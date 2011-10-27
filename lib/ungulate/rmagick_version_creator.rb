@@ -1,5 +1,6 @@
 require 'curb'
 require 'active_support/core_ext/string'
+require 'mime/types'
 
 module Ungulate
   class RmagickVersionCreator
@@ -8,7 +9,11 @@ module Ungulate
     end
 
     def create(blob, instructions)
-      processed_image(magick_image_from_blob(blob), instructions).to_blob
+      image = processed_image(magick_image_from_blob(blob), instructions)
+      {
+        :blob => image.to_blob,
+        :content_type => MIME::Types.type_for(image.format).to_s
+      }
     end
 
     protected

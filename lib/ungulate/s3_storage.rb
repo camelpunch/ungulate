@@ -19,7 +19,10 @@ module Ungulate
     def store(key, value, options = {})
       @logger.info "Storing #{key} with value of size #{value.size}"
 
-      @bucket.put(key, value, {}, 'public-read')
+      @bucket.put(key, value, {}, 'public-read', {
+        'Content-Type' => options[:content_type],
+        'Cache-Control' => 'max-age=2629743'
+      })
 
       if @listener && options[:version]
         @listener.storage_complete(options[:version])
