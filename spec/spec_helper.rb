@@ -40,7 +40,7 @@ RSpec.configure do |config|
       new_queue.name.should be_present
     end
 
-    it "can send and receive one message at a time" do
+    it "can send and receive one deletable message at a time" do
       queue = new_queue
       clear(queue)
 
@@ -67,6 +67,8 @@ RSpec.configure do |config|
         iterations += 1
         puts "iteration: #{iterations} :: messages: #{received_bodies.to_a.join(',')}"
       end
+
+      messages.compact.each(&:delete)
 
       received_bodies.should == sent_bodies
     end
