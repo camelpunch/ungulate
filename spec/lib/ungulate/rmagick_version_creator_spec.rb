@@ -4,16 +4,11 @@ require 'ungulate/rmagick_version_creator'
 module Ungulate
   describe RmagickVersionCreator do
     subject do
-      RmagickVersionCreator.new(:logger => ::Logger.new(nil))
+      RmagickVersionCreator.new(:logger => ::Logger.new(nil),
+                                :http => http)
     end
 
-    def fixture_path(filename)
-      File.expand_path("../../fixtures/#{filename}", File.dirname(__FILE__))
-    end
-
-    def fixture(filename)
-      File.read fixture_path(filename)
-    end
+    let(:http) { double 'http' }
 
     shared_examples_for "an image converter" do
       it "creates a matching blob" do
@@ -61,16 +56,20 @@ module Ungulate
     end
 
     context "resize to fit and then composite" do
+      let(:url) { "https://some/watermark.png" }
       let(:original) { fixture 'chuckle.png' }
       let(:converted) { fixture 'chuckle_converted.png' }
       let(:bad) { fixture 'chuckle_converted_badly.png' }
 
       let(:instructions) do
-        url = "https://dmxno528jhfy0.cloudfront.net/superhug-watermark.png"
         [
           [ :resize_to_fit, 628, 464 ],
           [ :composite, url, :center_gravity, :soft_light_composite_op ]
         ]
+      end
+
+      before do
+        http.should_receive(:get_body).with(url).and_return fixture('watermark.png')
       end
 
       it_behaves_like "an image converter"

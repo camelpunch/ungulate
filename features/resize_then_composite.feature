@@ -1,4 +1,4 @@
-Feature: Image resize
+Feature: Image resize then composite
   As a site owner
   I want Ungulate to resize then composite images
   So that I don't have to watermark images by hand

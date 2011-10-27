@@ -2,6 +2,14 @@ require 'ungulate'
 require 'rspec'
 
 RSpec.configure do |config|
+  def fixture_path(filename)
+    File.expand_path("fixtures/#{filename}", File.dirname(__FILE__))
+  end
+
+  def fixture(filename)
+    File.read fixture_path(filename)
+  end
+
   def clear(queue)
     puts "CLEAR"
     (1..240).each do

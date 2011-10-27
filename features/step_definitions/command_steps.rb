@@ -21,7 +21,9 @@ When /^I run Ungulate$/ do
     :queue => queue,
     :job_processor => Ungulate::Job.new(
       :blob_processor => Ungulate::BlobProcessor.new(
-        :version_creator => Ungulate::RmagickVersionCreator.new
+        :version_creator => Ungulate::RmagickVersionCreator.new(
+          :http => Ungulate::CurlHttp.new
+        )
       ),
       :storage => storage,
       :http => Ungulate::CurlHttp.new

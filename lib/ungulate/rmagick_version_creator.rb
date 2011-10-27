@@ -1,4 +1,3 @@
-require 'curb'
 require 'active_support/core_ext/string'
 require 'mime/types'
 
@@ -6,6 +5,7 @@ module Ungulate
   class RmagickVersionCreator
     def initialize(options = {})
       @logger = options[:logger] || ::Logger.new($stdout)
+      @http = options[:http]
     end
 
     def create(blob, instructions)
@@ -23,7 +23,7 @@ module Ungulate
       @blobs_from_urls[url] ||=
         begin
           @logger.info "Grabbing blob from URL #{url}"
-          Curl::Easy.http_get(url).body_str
+          @http.get_body(url)
         end
     end
 
