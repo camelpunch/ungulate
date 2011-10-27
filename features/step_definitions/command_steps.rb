@@ -17,7 +17,7 @@ When /^I run Ungulate$/ do
     :secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY']
   )
 
-  Ungulate::Server.new(
+  server = Ungulate::Server.new(
     :queue => queue,
     :job_processor => Ungulate::Job.new(
       :blob_processor => Ungulate::BlobProcessor.new(
@@ -27,7 +27,11 @@ When /^I run Ungulate$/ do
       ),
       :storage => storage,
       :http => Ungulate::CurlHttp.new
-  )).run
+  ))
+
+  10.times do
+    break if server.run
+  end
 end
 
 Then /^there should be no errors$/ do

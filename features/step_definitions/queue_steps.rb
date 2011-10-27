@@ -4,8 +4,6 @@ Given /^an empty queue$/ do
 end
 
 Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
-  old_size = @q.size
-
   bucket.put key, File.open('features/camels.jpg').read
 
   versions = table.rows.inject({}) do |hash, row|
@@ -20,12 +18,7 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
     :versions => versions
   }.to_yaml
 
-  @q.send_message(message)
-
-  puts "waiting for message to reach queue"
-  while @q.size == old_size do
-    sleep 1
-  end
+  send_message(message)
 end
 
 Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |key, composite_url|
@@ -42,5 +35,5 @@ Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |ke
     }
   }.to_yaml
 
-  @q.send_message(message)
+  send_message(message)
 end

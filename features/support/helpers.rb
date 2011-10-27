@@ -16,3 +16,6 @@ def sqs
                               :server => sqs_server)
 end
 
+def send_message(message)
+  @q.send_message message
+end

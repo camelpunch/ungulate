@@ -31,12 +31,13 @@ module Ungulate
     it "gets an original blob and sends it to be processed" do
       blob = double 'blob'
 
-      storage.should_receive(:bucket).with('some-bucket').and_return(bucket)
+      storage.should_receive(:bucket).with('some-bucket', :listener => subject).
+        and_return(bucket)
       bucket.should_receive(:retrieve).with('original-key.jpg').and_return(blob)
 
       blob_processor.should_receive(:process).
         with(:blob => blob, :versions => versions, :bucket => bucket,
-             :listener => subject, :original_key => 'original-key.jpg')
+             :original_key => 'original-key.jpg')
 
       subject.process(job_encoded)
     end

@@ -13,14 +13,13 @@ module Ungulate
 
     def process(encoded_job)
       @attributes = YAML.load(encoded_job)
-      bucket = @storage.bucket(@attributes[:bucket])
+      bucket = @storage.bucket(@attributes[:bucket], :listener => self)
       versions = @attributes[:versions]
       blob = bucket.retrieve(@attributes[:key])
 
       @blob_processor.process(
         :blob => blob, :versions => versions,
-        :bucket => bucket, :original_key => @attributes[:key],
-        :listener => self
+        :bucket => bucket, :original_key => @attributes[:key]
       )
     end
 
