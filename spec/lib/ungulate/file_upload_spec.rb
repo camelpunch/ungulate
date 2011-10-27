@@ -20,6 +20,8 @@ module Ungulate
       end
     end
 
+    its(:access_key_id) { should == access_key_id }
+
     context "policy set directly" do
       let(:policy) do
         {

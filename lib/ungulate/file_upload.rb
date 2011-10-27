@@ -31,6 +31,10 @@ class Ungulate::FileUpload
     self.class.config
   end
 
+  def access_key_id
+    config.access_key_id
+  end
+
   def acl
     condition 'acl'
   end
