@@ -1,23 +1,21 @@
 require 'active_support/core_ext/class/attribute_accessors'
+require 'active_support/json'
+
 class Ungulate::FileUpload
-  attr_accessor(
-    :bucket_url,
-    :key
-  )
+  attr_accessor :bucket_url, :key
 
-  cattr_accessor(
-    :access_key_id,
-    :queue_name,
-    :secret_access_key
-  )
+  class << self
+    def config
+      Ungulate.configuration
+    end
 
-  def self.enqueue(job_description)
-    queue.send_message(job_description.to_yaml)
-  end
+    def queue
+      @queue ||= config.queue.call
+    end
 
-  def self.queue
-    sqs = RightAws::SqsGen2.new(access_key_id, secret_access_key)
-    sqs.queue(queue_name)
+    def enqueue(job_description)
+      queue.push(job_description.to_yaml)
+    end
   end
 
   def initialize(options = {})
@@ -27,6 +25,10 @@ class Ungulate::FileUpload
     if options[:policy]
       self.policy = options[:policy]
     end
+  end
+
+  def config
+    self.class.config
   end
 
   def acl
@@ -62,7 +64,7 @@ class Ungulate::FileUpload
   def signature
     Base64.encode64(
       OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'),
-                           secret_access_key,
+                           config.secret_access_key,
                            policy)
     ).gsub("\n", '')
   end

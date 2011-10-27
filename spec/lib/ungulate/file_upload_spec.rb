@@ -1,5 +1,6 @@
 require 'spec_helper'
 require 'ungulate/file_upload'
+require 'active_support/core_ext/numeric/time'
 
 module Ungulate
   describe FileUpload do
@@ -11,14 +12,13 @@ module Ungulate
     let(:queue_name) { 'some-queue-name' }
 
     before do
-      FileUpload.access_key_id = access_key_id
-      FileUpload.secret_access_key = secret_access_key
-      FileUpload.queue_name = queue_name
+      Ungulate.configure do |config|
+        config.access_key_id = access_key_id
+        config.secret_access_key = secret_access_key
+        config.queue_name = 'not-used'
+        config.queue = lambda { q }
+      end
     end
-
-    its(:access_key_id) { should == access_key_id }
-    its(:queue_name) { should == queue_name }
-    its(:secret_access_key) { should == secret_access_key }
 
     context "policy set directly" do
       let(:policy) do
@@ -94,12 +94,11 @@ module Ungulate
     end
 
     describe "enqueue" do
-      let(:q) { stub 'queue' }
+      let(:q) { double 'queue' }
       let(:job_hash) { stub('Hash', :to_yaml => :some_yaml) }
-      before { Ungulate::FileUpload.stub(:queue).and_return(q) }
 
       it "queues the yamlised version of the passed job hash" do
-        q.should_receive(:send_message).with(:some_yaml)
+        q.should_receive(:push).with(:some_yaml)
         Ungulate::FileUpload.enqueue(job_hash)
       end
     end
@@ -151,24 +150,6 @@ module Ungulate
         subject.stub(:policy).and_return(:encoded_policy)
         subject.send(:policy=, policy).should == :encoded_policy
       end
-    end
-
-    describe "queue" do
-      let(:sqs) do
-        sqs = stub 'SQS'
-        sqs.stub(:queue).with(queue_name).and_return(:queue_instance)
-        sqs
-      end
-
-      subject { Ungulate::FileUpload.queue }
-
-      before do
-        RightAws::SqsGen2.stub(:new).
-          with(access_key_id, secret_access_key).
-          and_return(sqs)
-      end
-
-      it { should == :queue_instance }
     end
 
     describe "signature" do
