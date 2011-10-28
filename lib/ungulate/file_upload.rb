@@ -9,6 +9,10 @@ class Ungulate::FileUpload
       Ungulate.configuration
     end
 
+    def access_key_id
+      config.access_key_id
+    end
+
     def queue
       @queue ||= config.queue.call
     end

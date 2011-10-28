@@ -20,7 +20,10 @@ module Ungulate
       end
     end
 
-    its(:access_key_id) { should == access_key_id }
+    it "has both class- and instance-level access_key_id readers" do
+      FileUpload.access_key_id.should == access_key_id
+      subject.access_key_id.should == access_key_id
+    end
 
     context "policy set directly" do
       let(:policy) do
