@@ -1,4 +1,4 @@
-require 'rmagick'
+require 'RMagick'
 require 'active_support/core_ext/string'
 require 'mime/types'
 
