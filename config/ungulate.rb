@@ -1,3 +1,5 @@
+require 'ungulate'
+
 Ungulate.configure do |config|
   # Configure your queue runner here.
   #
