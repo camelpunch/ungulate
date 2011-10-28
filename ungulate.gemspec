@@ -29,11 +29,15 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.summary = 'Process images using Amazon SQS and S3'
   gem.test_files = [
-    "spec/spec_helper.rb",
-    "spec/ungulate/file_upload_spec.rb",
-    "spec/ungulate/job_spec.rb",
-    "spec/ungulate/server_spec.rb",
-    "spec/ungulate/view_helpers_spec.rb"
+    "spec/lib/ungulate/file_upload_spec.rb",
+    "spec/lib/ungulate/job_spec.rb",
+    "spec/lib/ungulate/server_spec.rb",
+    "spec/lib/ungulate/blob_processor_spec.rb",
+    "spec/lib/ungulate/curl_http_spec.rb",
+    "spec/lib/ungulate/rmagick_version_creator_spec.rb",
+    "spec/lib/ungulate/s3_storage_spec.rb",
+    "spec/lib/ungulate/sqs_message_queue_spec.rb",
+    "spec/lib/ungulate/view_helpers_spec.rb"
   ]
 
   gem.add_runtime_dependency('activesupport', [">= 2.3.5"])
