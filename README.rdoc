@@ -7,7 +7,7 @@ This is a gem for uploading and processing images using an Amazon Web Services s
 It comes with a few goodies:
 
 * ungulate_server.rb - simple queue runner that expects a YAML-encoded job description for RMagick
-* Ungulate::FileUpload - a model for e.g. Rails that does some cryptography stuff - example to follow
+* Ungulate::FileUpload - a model for e.g. Rails that does some cryptography stuff - {examples in the docs}[https://github.com/camelpunch/ungulate/wiki/Examples]
 * A view helper for Rails: "ungulate_upload_form_for"
 
 == Installation
