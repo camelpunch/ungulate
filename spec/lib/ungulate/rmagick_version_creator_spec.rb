@@ -33,8 +33,8 @@ module Ungulate
 
       context "for a png" do
         it "includes image/png as the content-type in the return hash" do
-          subject.create(original, instructions)[:content_type].
-            should == 'image/png'
+          image = subject.create(original, instructions)
+          image[:content_type].should == 'image/png'
         end
       end
 

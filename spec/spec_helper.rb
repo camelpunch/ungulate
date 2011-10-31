@@ -7,7 +7,9 @@ RSpec.configure do |config|
   end
 
   def fixture(filename)
-    File.read fixture_path(filename)
+    File.read(fixture_path(filename)).tap do |data|
+      data.force_encoding('ASCII-8BIT') if data.respond_to?(:force_encoding)
+    end
   end
 
   def clear(queue)

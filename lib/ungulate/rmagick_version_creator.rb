@@ -13,7 +13,7 @@ module Ungulate
       image = processed_image(magick_image_from_blob(blob), instructions)
       {
         :blob => image.to_blob,
-        :content_type => MIME::Types.type_for(image.format).to_s
+        :content_type => MIME::Types.type_for(image.format).to_s.gsub(/[\[\]]/, '')
       }
     end
 

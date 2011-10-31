@@ -48,8 +48,13 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency('hashie', [">= 1.2.0"])
   gem.add_development_dependency('rake')
   gem.add_development_dependency('rspec', [">= 2.4.0"])
-  gem.add_development_dependency('cucumber', [">= 0.10.0"])
+  gem.add_development_dependency('cucumber', [">= 1.1.1"])
   gem.add_development_dependency('i18n', [">= 0.5.0"])
-  gem.add_development_dependency('ruby-debug')
+
+  if RUBY_VERSION =~ /^1.9/
+    gem.add_development_dependency('ruby-debug19')
+  else
+    gem.add_development_dependency('ruby-debug')
+  end
 end
 
