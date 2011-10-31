@@ -8,6 +8,7 @@ When /^I run Ungulate$/ do
   Ungulate.configure do |config|
     config.queue_name = QUEUE_NAME
     config.queue_server = sqs_server
+    config.s3_region = 'eu-west-1'
   end
 
   10.times do

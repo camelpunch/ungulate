@@ -42,7 +42,7 @@ module Ungulate
         }
 
         config.storage = lambda {
-          S3Storage.new(amazon_credentials.call)
+          S3Storage.new(amazon_credentials.call.merge(:region => config.s3_region))
         }
 
         config.blob_processor = lambda {
