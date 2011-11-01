@@ -1,9 +1,16 @@
 require 'right_aws'
 
-def bucket
-  s3 = RightAws::S3.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                        ENV['AMAZON_SECRET_ACCESS_KEY'])
-  s3.bucket BUCKET_NAME
+def storage
+  @storage ||= Fog::Storage.new(
+    :provider => 'AWS',
+    :aws_access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
+    :aws_secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY'],
+    :region => 'eu-west-1'
+  )
+end
+
+def put(key, value)
+  storage.put_object BUCKET_NAME, key, value
 end
 
 def sqs_server

@@ -1,7 +1,7 @@
 Given /^a request that has a notification URL$/ do
   key = 'bobbyjpeg'
 
-  bucket.put key, File.open('features/camels.jpg').read
+  put key, File.open('features/camels.jpg').read
 
   message = {
     :bucket => BUCKET_NAME,

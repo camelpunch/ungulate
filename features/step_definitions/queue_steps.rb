@@ -4,7 +4,7 @@ Given /^an empty queue$/ do
 end
 
 Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
-  bucket.put key, File.open('features/camels.jpg').read
+  put key, File.open('features/camels.jpg').read
 
   versions = table.rows.inject({}) do |hash, row|
     label, width, height = row
@@ -22,7 +22,7 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
 end
 
 Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |key, composite_url|
-  bucket.put key, File.open('features/camels.jpg').read
+  put key, File.open('features/camels.jpg').read
 
   message = {
     :bucket => BUCKET_NAME,
