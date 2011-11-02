@@ -25,7 +25,6 @@ module Ungulate
 
       if options[:policy]
         self.policy = options[:policy]
-      else
         @encoded_policy = options[:encoded_policy]
       end
     end
