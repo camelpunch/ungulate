@@ -3,7 +3,7 @@ require 'active_support/json'
 
 module Ungulate
   class FileUpload
-    attr_accessor :bucket_url, :key
+    attr_accessor :bucket_url, :key, :encoded_policy
 
     class << self
       def config
@@ -25,6 +25,8 @@ module Ungulate
 
       if options[:policy]
         self.policy = options[:policy]
+      else
+        @encoded_policy = options[:encoded_policy]
       end
     end
 
@@ -50,10 +52,19 @@ module Ungulate
         @policy_ruby['conditions'].map {|condition| condition.to_a.flatten}
     end
 
+    def encode_policy(policy_hash)
+      policy_hash['expiration'] = policy_hash['expiration'].utc
+      Base64.encode64(ActiveSupport::JSON.encode(policy_hash)).gsub("\n", '')
+    end
+
     def policy
-      Base64.encode64(
-        ActiveSupport::JSON.encode(@policy_ruby)
-      ).gsub("\n", '')
+      if @policy_ruby
+        Base64.encode64(
+          ActiveSupport::JSON.encode(@policy_ruby)
+        ).gsub("\n", '')
+      else
+        @encoded_policy
+      end
     end
 
     def policy=(new_policy)
