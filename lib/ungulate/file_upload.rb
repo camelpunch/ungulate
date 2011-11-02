@@ -52,7 +52,7 @@ module Ungulate
         @policy_ruby['conditions'].map {|condition| condition.to_a.flatten}
     end
 
-    def encode_policy(policy_hash)
+    def self.encode_policy(policy_hash)
       policy_hash['expiration'] = policy_hash['expiration'].utc
       Base64.encode64(ActiveSupport::JSON.encode(policy_hash)).gsub("\n", '')
     end
