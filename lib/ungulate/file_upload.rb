@@ -2,74 +2,56 @@ require 'active_support/core_ext/class/attribute_accessors'
 require 'active_support/json'
 
 class Ungulate::FileUpload
-  attr_accessor :bucket_url, :key
+  attr_reader(:acl, :bucket_url, :conditions,
+              :key, :policy, :success_action_redirect)
 
   class << self
-    def config
-      Ungulate.configuration
-    end
-
-    def queue
-      @queue ||= config.queue.call
-    end
-
     def enqueue(job_description)
       queue.push(job_description.to_yaml)
+    end
+
+    protected
+
+    def queue
+      @queue ||= Ungulate.configuration.queue.call
     end
   end
 
   def initialize(options = {})
-    self.bucket_url = options[:bucket_url]
-    self.key = options[:key]
+    @bucket_url = options[:bucket_url]
+    @key = options[:key]
+    @policy = options[:policy]
 
-    if options[:policy]
-      self.policy = options[:policy]
+    if @policy
+      @policy['expiration'] = @policy['expiration'].utc
+
+      @conditions =
+        @policy['conditions'].map {|condition| condition.to_a.flatten }
+
+      @acl, @success_action_redirect =
+        Hash[@conditions].values_at('acl', 'success_action_redirect')
+
+      @policy =
+        Base64.encode64(ActiveSupport::JSON.encode(@policy)).gsub("\n", '')
     end
-  end
-
-  def config
-    self.class.config
   end
 
   def access_key_id
     config.access_key_id
   end
 
-  def acl
-    condition 'acl'
-  end
-
-  def condition(key)
-    found_key, found_value = conditions.find {|condition| condition.first == key}
-    found_value if found_value
-  end
-
-  def conditions
-    @conditions ||=
-      @policy_ruby['conditions'].map {|condition| condition.to_a.flatten}
-  end
-
-  def policy
-    Base64.encode64(
-      ActiveSupport::JSON.encode(@policy_ruby)
-    ).gsub("\n", '')
-  end
-
-  def policy=(new_policy)
-    new_policy['expiration'] = new_policy['expiration'].utc
-    @policy_ruby = new_policy
-    policy
-  end
-
-  def success_action_redirect
-    condition 'success_action_redirect'
-  end
-
   def signature
     Base64.encode64(
-      OpenSSL::HMAC.digest(OpenSSL::Digest::Digest.new('sha1'),
-                           config.secret_access_key,
-                           policy)
-    ).gsub("\n", '')
+      OpenSSL::HMAC.digest(
+        OpenSSL::Digest::Digest.new('sha1'),
+        config.secret_access_key,
+        policy
+    )).gsub("\n", '')
+  end
+
+  protected
+
+  def config
+    Ungulate.configuration
   end
 end

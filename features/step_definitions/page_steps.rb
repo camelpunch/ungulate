@@ -39,10 +39,16 @@ Then /^I should be taken to the success redirect URL$/ do
 end
 
 Then /^the file I uploaded should be on S3$/ do
+  expected_data = File.read(path_to_file)
+
+  if expected_data.respond_to?(:force_encoding)
+    expected_data.force_encoding('ASCII-8BIT')
+  end
+
   storage.get_object(
     Ungulate.configuration.test_bucket,
     Ungulate.configuration.test_upload_key
-  ).body.should == File.read(path_to_file)
+  ).body.should == expected_data
 end
 
 Then /^show me the page$/ do

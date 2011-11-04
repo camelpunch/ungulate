@@ -1,5 +1,5 @@
 require 'sinatra'
-require 'config/ungulate'
+require File.expand_path('../../config/ungulate', File.dirname(__FILE__))
 require 'ungulate/view_helpers'
 require 'ungulate/file_upload'
 require 'active_support/log_subscriber'
