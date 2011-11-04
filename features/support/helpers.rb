@@ -10,7 +10,7 @@ def storage
 end
 
 def put(key, value)
-  storage.put_object BUCKET_NAME, key, value
+  storage.put_object Ungulate.configuration.test_bucket, key, value
 end
 
 def sqs_server

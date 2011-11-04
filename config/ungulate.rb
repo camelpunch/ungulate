@@ -18,6 +18,11 @@ Ungulate.configure do |config|
 
   config.server_sleep = 2 # seconds
 
+  # Cucumber settings
+  # config.test_bucket = 'ungulate-test'
+  # config.test_upload_key = 'some-file'
+  # config.test_success_action_redirect_path = '/some-path'
+
   #
   # Advanced:
   #

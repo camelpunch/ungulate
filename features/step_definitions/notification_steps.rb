@@ -4,7 +4,7 @@ Given /^a request that has a notification URL$/ do
   put key, File.open('features/camels.jpg').read
 
   message = {
-    :bucket => BUCKET_NAME,
+    :bucket => Ungulate.configuration.test_bucket,
     :key => key,
     :notification_url => 'http://localhost:9999/bob',
     :versions => {

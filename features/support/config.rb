@@ -3,4 +3,3 @@ require 'ungulate'
 require 'ruby-debug'
 
 QUEUE_NAME = 'ungulate-test-queue'
-BUCKET_NAME = 'ungulate-test'

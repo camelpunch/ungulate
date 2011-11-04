@@ -19,17 +19,18 @@ module Ungulate
       begin
         config = Configuration.new
 
-        amazon_credentials = lambda {
-          {
-            :access_key_id => config.access_key_id || ENV['AMAZON_ACCESS_KEY_ID'],
-            :secret_access_key => config.secret_access_key || ENV['AMAZON_SECRET_ACCESS_KEY']
-          }
+        config.access_key_id = ENV['AMAZON_ACCESS_KEY_ID']
+        config.secret_access_key = ENV['AMAZON_SECRET_ACCESS_KEY']
+
+        amazon_credentials = {
+          :access_key_id => config.access_key_id,
+          :secret_access_key => config.secret_access_key
         }
 
         config.queue = lambda {
           SqsMessageQueue.new(
             config.queue_name,
-            amazon_credentials.call.merge(:server => config.queue_server)
+            amazon_credentials.merge(:server => config.queue_server)
           )
         }
 
@@ -42,7 +43,7 @@ module Ungulate
         }
 
         config.storage = lambda {
-          S3Storage.new(amazon_credentials.call.merge(:region => config.s3_region))
+          S3Storage.new(amazon_credentials.merge(:region => config.s3_region))
         }
 
         config.blob_processor = lambda {

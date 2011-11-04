@@ -51,6 +51,10 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('rspec', [">= 2.4.0"])
   gem.add_development_dependency('cucumber', [">= 1.1.1"])
   gem.add_development_dependency('i18n', [">= 0.5.0"])
+  gem.add_development_dependency('capybara', [">= 1.1.1"])
+  gem.add_development_dependency('sinatra', [">= 1.3.1"])
+  gem.add_development_dependency('launchy', [">= 2.0.5"])
+  gem.add_development_dependency('actionpack', [">= 3.1.1"])
 
   if RUBY_VERSION =~ /^1.9/
     gem.add_development_dependency('ruby-debug19')

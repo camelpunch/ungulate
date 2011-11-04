@@ -21,3 +21,4 @@ Gemfile.lock
 ungulate-*.gem
 
 ## PROJECT::SPECIFIC
+capybara-*

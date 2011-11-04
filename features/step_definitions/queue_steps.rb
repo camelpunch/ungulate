@@ -13,7 +13,7 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
   end
 
   message = {
-    :bucket => BUCKET_NAME,
+    :bucket => Ungulate.configuration.test_bucket,
     :key => key,
     :versions => versions
   }.to_yaml
@@ -25,7 +25,7 @@ Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |ke
   put key, File.open('features/camels.jpg').read
 
   message = {
-    :bucket => BUCKET_NAME,
+    :bucket => Ungulate.configuration.test_bucket,
     :key => key,
     :versions => {
       :watermarked => [
