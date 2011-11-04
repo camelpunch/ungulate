@@ -22,6 +22,7 @@ Ungulate.configure do |config|
   # config.test_bucket = 'ungulate-test'
   # config.test_upload_key = 'some-file'
   # config.test_success_action_redirect_path = '/some-path'
+  # config.test_queue_name = 'some-queue'
 
   #
   # Advanced:

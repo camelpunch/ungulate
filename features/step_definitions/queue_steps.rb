@@ -1,6 +1,5 @@
 Given /^an empty queue$/ do
-  @q = sqs.queue QUEUE_NAME
-  @q.clear
+  queue.clear
 end
 
 Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
@@ -18,7 +17,7 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
     :versions => versions
   }.to_yaml
 
-  send_message(message)
+  queue.send_message(message)
 end
 
 Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |key, composite_url|
@@ -35,5 +34,5 @@ Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |ke
     }
   }.to_yaml
 
-  send_message(message)
+  queue.send_message(message)
 end

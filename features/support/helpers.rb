@@ -1,10 +1,15 @@
 require 'right_aws'
 
 def storage
+  if Ungulate.configuration.test_bucket.blank?
+    raise Ungulate::MissingConfiguration,
+      "Please set config.test_bucket to run Cucumber features"
+  end
+
   @storage ||= Fog::Storage.new(
     :provider => 'AWS',
-    :aws_access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
-    :aws_secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY'],
+    :aws_access_key_id => Ungulate.configuration.access_key_id,
+    :aws_secret_access_key => Ungulate.configuration.secret_access_key,
     :region => 'eu-west-1'
   )
 end
@@ -13,16 +18,13 @@ def put(key, value)
   storage.put_object Ungulate.configuration.test_bucket, key, value
 end
 
-def sqs_server
-  'sqs.eu-west-1.amazonaws.com'
-end
-
 def sqs
-  sqs = RightAws::SqsGen2.new(ENV['AMAZON_ACCESS_KEY_ID'],
-                              ENV['AMAZON_SECRET_ACCESS_KEY'],
-                              :server => sqs_server)
+  RightAws::SqsGen2.new(Ungulate.configuration.access_key_id,
+                        Ungulate.configuration.secret_access_key,
+                        :server => Ungulate.configuration.queue_server)
 end
 
-def send_message(message)
-  @q.send_message message
+def queue
+  @queue ||= sqs.queue(Ungulate.configuration.test_queue_name)
 end
+

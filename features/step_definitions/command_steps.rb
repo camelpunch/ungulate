@@ -6,9 +6,11 @@ When /^I run Ungulate$/ do
   $stderr = @errors
 
   Ungulate.configure do |config|
-    config.queue_name = QUEUE_NAME
-    config.queue_server = sqs_server
-    config.s3_region = 'eu-west-1'
+    if config.test_queue_name.blank?
+      raise Ungulate::MissingConfiguration,
+        "Please set config.test_queue_name to run Cucumber features"
+    end
+    config.queue_name = config.test_queue_name
   end
 
   10.times do

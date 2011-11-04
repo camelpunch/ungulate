@@ -14,18 +14,13 @@ When /^I attach a file to the form$/ do
 end
 
 When /^I submit the form$/ do
-  if Ungulate.configuration.test_bucket.blank?
-    raise RuntimeError,
-      "Please set config.test_bucket to run FileUpload Cucumber features"
-  end
-
   if Ungulate.configuration.test_upload_key.blank?
-    raise RuntimeError,
+    raise Ungulate::MissingConfiguration,
       "Please set config.test_upload_key to run FileUpload Cucumber features"
   end
 
   if Ungulate.configuration.test_success_action_redirect_path.blank?
-    raise RuntimeError,
+    raise Ungulate::MissingConfiguration,
       "Please set config.test_success_action_redirect_path to run FileUpload Cucumber features"
   end
 
