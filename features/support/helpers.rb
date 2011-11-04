@@ -24,7 +24,16 @@ def sqs
                         :server => Ungulate.configuration.queue_server)
 end
 
+def test_queue_name
+  if Ungulate.configuration.test_queue_name.blank?
+    raise Ungulate::MissingConfiguration,
+      "Please set config.test_queue_name to run Cucumber features"
+  end
+
+  Ungulate.configuration.test_queue_name
+end
+
 def queue
-  @queue ||= sqs.queue(Ungulate.configuration.test_queue_name)
+  @queue ||= sqs.queue(test_queue_name)
 end
 

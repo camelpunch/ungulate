@@ -17,7 +17,7 @@ require 'active_support/core_ext/numeric/time'
 class TestApp < Sinatra::Base
   attr_accessor :output_buffer
 
-  include ViewHelpers
+  include Ungulate::ViewHelpers
   include ActionView::Helpers::TextHelper
   include ActionView::Helpers::CaptureHelper
 

@@ -6,11 +6,7 @@ When /^I run Ungulate$/ do
   $stderr = @errors
 
   Ungulate.configure do |config|
-    if config.test_queue_name.blank?
-      raise Ungulate::MissingConfiguration,
-        "Please set config.test_queue_name to run Cucumber features"
-    end
-    config.queue_name = config.test_queue_name
+    config.queue_name = test_queue_name
   end
 
   10.times do

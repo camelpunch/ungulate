@@ -71,5 +71,5 @@ end
 
 if defined? ActionView::Base
   require 'ungulate/view_helpers'
-  ActionView::Base.send :include, ViewHelpers
+  ActionView::Base.send :include, Ungulate::ViewHelpers
 end
