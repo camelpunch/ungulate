@@ -14,9 +14,9 @@ module Ungulate
   describe SqsMessageQueue do
     def new_queue
       SqsMessageQueue.new('some_test_queue',
-                          :access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
-                          :secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY'],
-                          :server => ENV['QUEUE_SERVER'])
+                          :access_key_id => Ungulate.configuration.access_key_id,
+                          :secret_access_key => Ungulate.configuration.secret_access_key,
+                          :server => Ungulate.configuration.queue_server)
     end
 
     it_behaves_like "a message queue"

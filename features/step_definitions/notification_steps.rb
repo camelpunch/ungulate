@@ -14,7 +14,7 @@ Given /^a request that has a notification URL$/ do
     }
   }.to_yaml
 
-  queue.send_message(message)
+  queue.push(message)
 end
 
 Then /^the notification URL should receive a PUT$/ do

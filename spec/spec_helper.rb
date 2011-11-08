@@ -12,29 +12,46 @@ RSpec.configure do |config|
     end
   end
 
+  POLL_TIMES = 240
+  SLEEPYTIME = 1
+
+  def sleep!
+    sleep SLEEPYTIME
+    puts "slept #{SLEEPYTIME} second"
+  end
+
   def clear(queue)
     puts "CLEAR"
-    (1..240).each do
+    (1..POLL_TIMES).each do
       queue.clear
       size = queue.size
       puts "queue size: #{size}"
       return if size.zero?
-      sleep 1
-      puts "slept 1 second"
+      sleep!
     end
     queue.size.should be_zero
   end
 
   def wait_for_non_empty(queue)
     puts "WAIT FOR NON EMPTY"
-    (1..240).each do
+    (1..POLL_TIMES).each do
       size = queue.size
       puts "queue size: #{size}"
       return if size > 0
-      sleep 1
-      puts "slept 1 second"
+      sleep!
     end
     queue.size.should_not be_zero
+  end
+
+  def wait_for_empty(queue)
+    puts "WAIT FOR EMPTY"
+    (1..POLL_TIMES).each do
+      size = queue.size
+      puts "queue size: #{size}"
+      return true if size.zero?
+      sleep!
+    end
+    queue.size.should be_zero
   end
 
   shared_examples_for "a message queue" do
@@ -71,6 +88,8 @@ RSpec.configure do |config|
       end
 
       messages.compact.each(&:delete)
+
+      wait_for_empty(new_queue_instance)
 
       received_bodies.should == sent_bodies
     end

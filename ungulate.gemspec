@@ -41,7 +41,6 @@ Gem::Specification.new do |gem|
   ]
 
   gem.add_runtime_dependency('activesupport', [">= 2.3.5"])
-  gem.add_runtime_dependency('right_aws', [">= 2.0.0"])
   gem.add_runtime_dependency('fog', [">= 1.0.0"])
   gem.add_runtime_dependency('rmagick', [">= 2.13.1"])
   gem.add_runtime_dependency('mime-types', [">= 1.16"])

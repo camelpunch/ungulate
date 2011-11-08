@@ -17,7 +17,7 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
     :versions => versions
   }.to_yaml
 
-  queue.send_message(message)
+  queue.push(message)
 end
 
 Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |key, composite_url|
@@ -34,5 +34,5 @@ Given /^a request to resize "([^"]*)" and then composite with "([^"]*)"$/ do |ke
     }
   }.to_yaml
 
-  queue.send_message(message)
+  queue.push(message)
 end

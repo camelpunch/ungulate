@@ -1,3 +1,5 @@
+require 'net/http'
+
 Then /^there should be the following public versions:$/ do |table|
   Net::HTTP.start("#{Ungulate.configuration.test_bucket}.s3.amazonaws.com", 80) do |http|
     table.rows.flatten.each do |key|
