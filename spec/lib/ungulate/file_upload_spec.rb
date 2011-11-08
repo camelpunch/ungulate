@@ -50,11 +50,9 @@ module Ungulate
     end
 
     before do
-      Ungulate.configure do |config|
-        config.access_key_id = access_key_id
-        config.secret_access_key = secret_access_key
-        config.queue = lambda { queue }
-      end
+      Ungulate.configuration.stub(:access_key_id).and_return(access_key_id)
+      Ungulate.configuration.stub(:secret_access_key).and_return(secret_access_key)
+      Ungulate.configuration.stub(:queue).and_return lambda { queue }
     end
 
     it "allows reading of the configured Amazon Access Key ID" do
