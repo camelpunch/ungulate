@@ -1,10 +1,10 @@
 require 'spec_helper'
-require 'ungulate/curl_http'
+require 'ungulate/http'
 
 module Ungulate
-  describe CurlHttp do
+  describe Http do
     subject do
-      CurlHttp.new(:logger => ::Logger.new(nil))
+      Http.new(:logger => ::Logger.new(nil))
     end
 
     it "can return the body of a resource from https" do

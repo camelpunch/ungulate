@@ -1,25 +1,24 @@
-require 'curb'
+require 'excon'
 
 module Ungulate
-  class CurlHttp
+  class Http
     def initialize(options = {})
-      @easy = Curl::Easy
       @logger = options[:logger] || ::Logger.new($stdout)
     end
 
     def get_body(url)
       @logger.info "GET via HTTP: #{url}"
-      @easy.http_get(url).body_str
+      Excon.get(url).body
     end
 
     def put(url)
       @logger.info "PUT #{url}"
-      @response = @easy.http_put(url, '')
+      @response = Excon.put(url)
       self
     end
 
     def code
-      @response.response_code
+      @response.status
     end
   end
 end

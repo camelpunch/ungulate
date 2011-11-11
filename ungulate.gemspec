@@ -44,7 +44,6 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency('fog', [">= 1.0.0"])
   gem.add_runtime_dependency('rmagick', [">= 2.13.1"])
   gem.add_runtime_dependency('mime-types', [">= 1.16"])
-  gem.add_runtime_dependency('curb', [">= 0.7.15"])
   gem.add_runtime_dependency('hashie', [">= 1.2.0"])
   gem.add_development_dependency('rake')
   gem.add_development_dependency('rspec', [">= 2.4.0"])

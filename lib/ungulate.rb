@@ -9,7 +9,7 @@ require 'ungulate/file_upload'
 require 'ungulate/blob_processor'
 require 'ungulate/rmagick_version_creator'
 require 'ungulate/s3_storage'
-require 'ungulate/curl_http'
+require 'ungulate/http'
 
 module Ungulate
   class Configuration < Hashie::Mash; end
@@ -36,7 +36,7 @@ module Ungulate
         }
 
         config.http = lambda {
-          CurlHttp.new
+          Http.new
         }
 
         config.version_creator = lambda {
