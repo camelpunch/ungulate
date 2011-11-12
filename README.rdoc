@@ -1,5 +1,7 @@
 = Ungulate
 
+{<img src="https://secure.travis-ci.org/camelpunch/ungulate.png" />}[http://travis-ci.org/camelpunch/ungulate]
+
 According to Wikipedia, this can mean "hoofed animal". Camels have hooves.
 
 This is a gem for uploading and processing images using an Amazon Web Services stack.
