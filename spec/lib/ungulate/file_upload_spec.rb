@@ -115,7 +115,7 @@ describe Ungulate::FileUpload do
     let(:job) { { :large => [ :resize_to_fit, 654, 123 ] } }
 
     it "sends the YAML-encoded job to the configured queue" do
-      queue.should_receive(:push).with("--- \n:large: \n- :resize_to_fit\n- 654\n- 123\n")
+      queue.should_receive(:push).with(job.to_yaml)
       Ungulate::FileUpload.enqueue(job)
     end
   end
