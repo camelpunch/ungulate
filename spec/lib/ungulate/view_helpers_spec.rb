@@ -15,32 +15,31 @@ class Rails3Includer
   include Ungulate::ViewHelpers
 end
 
-module Ungulate
-  describe ViewHelpers do
-    describe "ungulate_upload_form_for" do
-      let(:file_upload) do
-        double('Ungulate::FileUpload',
-               :access_key_id => 'awsaccesskeyid',
-               :acl => 'private',
-               :bucket_url => 'http://static.test.s3.amazonaws.com/',
-               :key => 'some/key',
-               :policy => 'thepolicy',
-               :signature => 'thesignature',
-               :success_action_redirect => '/some/place')
+describe Ungulate::ViewHelpers do
+  describe "ungulate_upload_form_for" do
+    let(:file_upload) do
+      double('Ungulate::FileUpload',
+             :access_key_id => 'awsaccesskeyid',
+             :acl => 'private',
+             :bucket_url => 'http://static.test.s3.amazonaws.com/',
+             :key => 'some/key',
+             :policy => 'thepolicy',
+             :signature => 'thesignature',
+             :success_action_redirect => '/some/place')
+    end
+
+    context "rails 2.3.x style" do
+      let(:helper) { Rails2Includer.new }
+
+      before do
+        helper.output_buffer = ''
+        helper.ungulate_upload_form_for(file_upload) do
+          helper.concat('text in the middle')
+        end
       end
 
-      context "rails 2.3.x style" do
-        let(:helper) { Rails2Includer.new }
-
-        before do
-          helper.output_buffer = ''
-          helper.ungulate_upload_form_for(file_upload) do
-            helper.concat('text in the middle')
-          end
-        end
-
-        it "should have a complete form" do
-          helper.output_buffer.should == <<-HTML
+      it "should have a complete form" do
+        helper.output_buffer.should == <<-HTML
 <form action="http://static.test.s3.amazonaws.com/" enctype="multipart/form-data" method="post">
 <div>
 <input name="key" type="hidden" value="some/key" />
@@ -52,27 +51,26 @@ module Ungulate
 text in the middle
 </div>
 </form>
-          HTML
-        end
+        HTML
+      end
+    end
+
+    context "rails 3 style" do
+      let(:helper) { Rails3Includer.new }
+      let(:safe_buffer) { mock('SafeBuffer', :<< => nil, :safe_concat => nil) }
+
+      before do
+        helper.stub(:respond_to?).with(:safe_concat).and_return(true)
+        helper.stub(:capture)
+        ActiveSupport::SafeBuffer.stub(:new).and_return(safe_buffer)
       end
 
-      context "rails 3 style" do
-        let(:helper) { Rails3Includer.new }
-        let(:safe_buffer) { mock('SafeBuffer', :<< => nil, :safe_concat => nil) }
-
-        before do
-          helper.stub(:respond_to?).with(:safe_concat).and_return(true)
-          helper.stub(:capture)
-          ActiveSupport::SafeBuffer.stub(:new).and_return(safe_buffer)
-        end
-
-        it "should use a SafeBuffer" do
-          safe_buffer.should_receive(:safe_concat).ordered
-          safe_buffer.should_receive(:<<).ordered
-          safe_buffer.should_receive(:safe_concat).ordered
-          helper.ungulate_upload_form_for(file_upload) do
-            helper.safe_concat('text in the middle')
-          end
+      it "should use a SafeBuffer" do
+        safe_buffer.should_receive(:safe_concat).ordered
+        safe_buffer.should_receive(:<<).ordered
+        safe_buffer.should_receive(:safe_concat).ordered
+        helper.ungulate_upload_form_for(file_upload) do
+          helper.safe_concat('text in the middle')
         end
       end
     end

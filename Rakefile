@@ -7,14 +7,16 @@ RSpec::Core::RakeTask.new(:spec)
 require 'cucumber/rake/task'
 Cucumber::Rake::Task.new
 
-task :default => :spec
+namespace :spec do
+  desc "Run specs that don't talk to services"
+  RSpec::Core::RakeTask.new(:focus) do |t|
+    t.rspec_opts = '-t ~integration'
+  end
 
-require 'rake/rdoctask'
-Rake::RDocTask.new do |rdoc|
-  version = File.exist?('VERSION') ? File.read('VERSION') : ""
-
-  rdoc.rdoc_dir = 'rdoc'
-  rdoc.title = "ungulate #{version}"
-  rdoc.rdoc_files.include('README*')
-  rdoc.rdoc_files.include('lib/**/*.rb')
+  desc "Run integration (adapter) specs. These require configuration in config/ungulate.rb"
+  RSpec::Core::RakeTask.new(:integration) do |t|
+    t.rspec_opts = '-t integration'
+  end
 end
+
+task :default => 'spec:focus'
