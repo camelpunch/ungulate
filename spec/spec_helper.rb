@@ -1,6 +1,8 @@
 require 'ungulate'
 require 'rspec'
 
+Dir[File.dirname(__FILE__) + "/support/**/*.rb"].each {|f| require f}
+
 RSpec.configure do |config|
   def fixture_path(filename)
     File.expand_path("fixtures/#{filename}", File.dirname(__FILE__))

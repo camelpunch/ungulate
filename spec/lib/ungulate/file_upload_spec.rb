@@ -12,14 +12,16 @@ describe Ungulate::FileUpload do
   let(:key) { "new-file" }
   let(:access_key_id) { "asdf" }
   let(:secret_access_key) { 'uV3F3YluFJax1cknvbcGwgjvx4QpvB+leU8dUj2o' }
+  let(:acl) { 'public-read' }
+  let(:success_action_redirect) { "http://johnsmith.s3.amazonaws.com/successful_upload.html" }
   let(:input_policy) do
     {
       "expiration" => expiration,
       "conditions" => [
         {"bucket" => "johnsmith" },
         ["starts-with", "$key", "user/eric/"],
-        {"acl" => "public-read" },
-        {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
+        {"acl" => acl },
+        {"success_action_redirect" => success_action_redirect },
         ["starts-with", "$Content-Type", "image/"],
         {"x-amz-meta-uuid" => "14365123651274"},
         ["starts-with", "$x-amz-meta-tag", ""]
@@ -28,24 +30,9 @@ describe Ungulate::FileUpload do
   end
 
   let(:policy_utc) do
-    {
-      "expiration" => expiration_utc,
-      "conditions" => [
-        {"bucket" => "johnsmith" },
-        ["starts-with", "$key", "user/eric/"],
-        {"acl" => "public-read" },
-        {"success_action_redirect" => "http://johnsmith.s3.amazonaws.com/successful_upload.html" },
-        ["starts-with", "$Content-Type", "image/"],
-        {"x-amz-meta-uuid" => "14365123651274"},
-        ["starts-with", "$x-amz-meta-tag", ""]
-      ]
-    }
-  end
-
-  RSpec::Matchers.define :have_reader_for do |attribute|
-    match do |record|
-      record.send(attribute).should == send(attribute)
-    end
+    policy = input_policy.clone
+    policy['expiration'] = expiration_utc
+    policy
   end
 
   before do
@@ -55,7 +42,7 @@ describe Ungulate::FileUpload do
   end
 
   it "allows reading of the configured Amazon Access Key ID" do
-    subject.access_key_id.should == access_key_id
+    subject.should have_reader_for :access_key_id
   end
 
   context "when attributes set in constructor" do
@@ -67,22 +54,10 @@ describe Ungulate::FileUpload do
       )
     end
 
-    it "has same ACL" do
-      subject.acl.should == 'public-read'
-    end
-
-    it "has same bucket URL" do
-      subject.bucket_url.should == bucket_url
-    end
-
-    it "has same key" do
-      subject.key.should == key
-    end
-
-    it "has same success action redirect URL" do
-      subject.success_action_redirect.should ==
-        'http://johnsmith.s3.amazonaws.com/successful_upload.html'
-    end
+    it { should have_reader_for :acl }
+    it { should have_reader_for :bucket_url }
+    it { should have_reader_for :key }
+    it { should have_reader_for :success_action_redirect }
 
     it "converts expiration to UTC" do
       decoded_policy = ActiveSupport::JSON.decode(Base64.decode64(subject.policy))
