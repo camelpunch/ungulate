@@ -23,7 +23,6 @@ describe Ungulate::BlobProcessor do
       :thumbnail => thumbnail
     }
 
-
     creator.should_receive(:create).with(blob, large).
       and_return(:blob => 'largeblob', :content_type => 'image/png')
 
