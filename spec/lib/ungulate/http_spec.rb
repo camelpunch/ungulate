@@ -1,7 +1,7 @@
 require 'spec_helper'
 require 'ungulate/http'
 
-describe Ungulate::Http do
+describe Ungulate::Http, :integration => true do
   subject do
     Ungulate::Http.new(:logger => ::Logger.new(nil))
   end
