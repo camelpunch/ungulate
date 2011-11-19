@@ -1,8 +1,10 @@
 require 'ostruct'
 require 'ungulate'
+require 'config/ungulate'
 
 When /^I run Ungulate$/ do
   @errors = OpenStruct.new :write => ''
+  old_stderr = $stderr
   $stderr = @errors
 
   Ungulate.configure do |config|
@@ -10,8 +12,10 @@ When /^I run Ungulate$/ do
   end
 
   10.times do
-    break if Ungulate::Server.run
+    Ungulate::Server.run
   end
+
+  $stderr = old_stderr
 end
 
 Then /^there should be no errors$/ do

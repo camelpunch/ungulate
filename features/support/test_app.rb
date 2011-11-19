@@ -46,4 +46,12 @@ class TestApp < Sinatra::Base
       ).html_safe
     end
   end
+
+  put '/bob' do
+    File.open('/tmp/ungulate_put_test', 'w') do |f|
+      f << 'received, loud and clear!'
+    end
+
+    'hello'
+  end
 end

@@ -3,12 +3,14 @@ require File.expand_path('../../../config/ungulate', File.dirname(__FILE__))
 require 'ungulate/s3_storage'
 require 'ostruct'
 
+# this integration test currently assumes your configured test_bucket is in the
+# eu-west-1 region
 describe Ungulate::S3Storage, :integration => true do
   def new_storage
     Ungulate::S3Storage.new(
-      :access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
-      :secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY'],
-      :region => 'eu-west-1'
+      :access_key_id => config.access_key_id,
+      :secret_access_key => config.secret_access_key,
+      :region => config.s3_region
     )
   end
 
@@ -23,8 +25,8 @@ describe Ungulate::S3Storage, :integration => true do
     text = OpenStruct.new :write => nil
     $stderr = text
     storage = Ungulate::S3Storage.new(
-      :access_key_id => ENV['AMAZON_ACCESS_KEY_ID'],
-      :secret_access_key => ENV['AMAZON_SECRET_ACCESS_KEY']
+      :access_key_id => config.access_key_id,
+      :secret_access_key => config.secret_access_key
     )
     storage.bucket(config.test_bucket)
     text.should be_present
@@ -39,6 +41,11 @@ describe Ungulate::S3Storage, :integration => true do
 
     bucket.store('someotherkey', 'someotherdata')
     bucket.retrieve('someotherkey').should == 'someotherdata'
+  end
+
+  it "returns nil when key doesn't exist" do
+    bucket = subject.bucket(config.test_bucket)
+    bucket.retrieve('poopypants').should be_nil
   end
 
   it "persists data across instances" do

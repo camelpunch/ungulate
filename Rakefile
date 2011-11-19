@@ -19,4 +19,5 @@ namespace :spec do
   end
 end
 
-task :default => 'spec:focus'
+task :default => %w(spec:focus spec:integration cucumber)
+task :ci => 'spec:focus'

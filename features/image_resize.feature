@@ -3,12 +3,10 @@ Feature: Image resize
   I want Ungulate to resize images
   So that I don't have to do it in my application
 
-  Background:
+  Scenario: Run queue that has one image job
     Given an empty queue
     And an empty bucket
-
-  Scenario: Run queue that has one image job
-    Given a request to resize "some/path/to/image.jpg" to sizes:
+    And a request to resize "some/path/to/image.jpg" to sizes:
       | label | width | height  |
       | large | 200   | 100     |
       | small | 100   | 50      |

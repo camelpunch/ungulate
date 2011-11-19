@@ -20,18 +20,16 @@ module Ungulate
       begin
         config = Configuration.new
 
+        # default creds to those in ENV
         config.access_key_id = ENV['AMAZON_ACCESS_KEY_ID']
         config.secret_access_key = ENV['AMAZON_SECRET_ACCESS_KEY']
 
-        amazon_credentials = {
-          :access_key_id => config.access_key_id,
-          :secret_access_key => config.secret_access_key
-        }
-
         config.queue = lambda {
           SqsMessageQueue.new(
-            config.queue_name,
-            amazon_credentials.merge(:server => config.queue_server)
+            configuration.queue_name,
+            :access_key_id => configuration.access_key_id,
+            :secret_access_key => configuration.secret_access_key,
+            :server => configuration.queue_server
           )
         }
 
@@ -40,24 +38,28 @@ module Ungulate
         }
 
         config.version_creator = lambda {
-          RmagickVersionCreator.new(:http => config.http.call)
+          RmagickVersionCreator.new(:http => configuration.http.call)
         }
 
         config.storage = lambda {
-          S3Storage.new(amazon_credentials.merge(:region => config.s3_region))
+          S3Storage.new(
+            :access_key_id => configuration.access_key_id,
+            :secret_access_key => configuration.secret_access_key,
+            :region => configuration.s3_region
+          )
         }
 
         config.blob_processor = lambda {
           BlobProcessor.new(
-            :version_creator => config.version_creator.call
+            :version_creator => configuration.version_creator.call
           )
         }
 
         config.job_processor = lambda {
           Job.new(
-            :blob_processor => config.blob_processor.call,
-            :storage => config.storage.call,
-            :http => config.http.call
+            :blob_processor => configuration.blob_processor.call,
+            :storage => configuration.storage.call,
+            :http => configuration.http.call
           )
         }
 

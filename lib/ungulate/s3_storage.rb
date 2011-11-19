@@ -41,6 +41,7 @@ module Ungulate
     def retrieve(key)
       @logger.info "Retrieving #{key}"
       @storage.get_object(@bucket_name, key).body
+    rescue Excon::Errors::Error
     end
 
     def delete(key)
