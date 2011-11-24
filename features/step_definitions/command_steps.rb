@@ -1,6 +1,5 @@
 require 'ostruct'
 require 'ungulate'
-require 'config/ungulate'
 
 When /^I run Ungulate$/ do
   @errors = OpenStruct.new :write => ''

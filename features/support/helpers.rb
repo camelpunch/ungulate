@@ -8,7 +8,7 @@ def storage
     :provider => 'AWS',
     :aws_access_key_id => Ungulate.configuration.access_key_id,
     :aws_secret_access_key => Ungulate.configuration.secret_access_key,
-    :region => 'eu-west-1'
+    :region => Ungulate.configuration.region
   )
 end
 
