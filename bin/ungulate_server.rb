@@ -1,12 +1,12 @@
 #!/usr/bin/env ruby
 
-require File.expand_path('../lib/ungulate', File.dirname(__FILE__))
+require File.expand_path('../../lib/ungulate', __FILE__)
 require 'optparse'
 
 logger = Logger.new $stderr
 
 options = {
-  :config => File.expand_path('../config/ungulate', File.dirname(__FILE__))
+  :config => File.expand_path('../../config/ungulate', __FILE__)
 }
 
 cmdline_options = OptionParser.new do |opts|

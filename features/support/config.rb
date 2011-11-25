@@ -1,4 +1,4 @@
-$LOAD_PATH.unshift(File.join(File.dirname(__FILE__), '..', 'lib'))
+$:.push File.expand_path('../lib', __FILE__)
 require 'ungulate'
 require 'ruby-debug'
 

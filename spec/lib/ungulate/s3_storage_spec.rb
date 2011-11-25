@@ -1,5 +1,5 @@
 require 'spec_helper'
-require File.expand_path('../../../config/ungulate', File.dirname(__FILE__))
+require File.expand_path('../../../../config/ungulate', __FILE__)
 require 'ungulate/s3_storage'
 require 'ostruct'
 
