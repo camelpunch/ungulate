@@ -15,6 +15,7 @@ Ungulate.configure do |config|
   # config.secret_access_key = 'ASDFASDFASDF'
   # config.queue_name = 'my-lovely-queue'
   # config.queue_server = 'sqs.eu-west-1.amazonaws.com'
+  # config.s3_region = 'eu-west-1' # optional, defaults to us-east-1
 
   config.server_sleep = 2 # seconds
 
