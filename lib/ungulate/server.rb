@@ -26,9 +26,9 @@ module Ungulate
       message = @queue.receive
 
       if message
-        success = @job_processor.process(message.to_s)
+        @job_processor.process(message.to_s)
         message.delete
-        success
+        true
       end
     end
   end

@@ -24,18 +24,18 @@ describe Ungulate::Server do
   it "returns truthy from run if it processed something" do
     queue.stub(:receive).and_return(message)
     message.stub(:delete)
-    processor.stub(:process).and_return(true)
+    processor.stub(:process).and_return('some value')
     subject.run.should be_true
   end
 
-  it "returns whatever the processor returns" do
+  it "returns truthy even if processor returns false, so we can get next message quickly" do
     queue.stub(:receive).and_return(message)
     message.stub(:delete)
-    processor.stub(:process).and_return('some message')
-    subject.run.should == 'some message'
+    processor.stub(:process).and_return(false)
+    subject.run.should be_true
   end
 
-  it "returns falsey from run if it did not process anything" do
+  it "returns falsey from run if there was no message" do
     queue.stub(:receive).and_return(nil)
     subject.run.should be_false
   end
