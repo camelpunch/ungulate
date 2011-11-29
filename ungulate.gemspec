@@ -1,6 +1,9 @@
+$:.push File.expand_path('../lib', __FILE__)
+require 'ungulate/version'
+
 Gem::Specification.new do |gem|
   gem.name = 'ungulate'
-  gem.version = File.read('VERSION')
+  gem.version = Ungulate::VERSION
 
   gem.authors = ["Andrew Bruce"]
   gem.date = Date.today.to_s
@@ -18,7 +21,6 @@ Gem::Specification.new do |gem|
     "LICENSE",
     "README.rdoc",
     "Rakefile",
-    "VERSION",
     "bin/*",
     "features/**/*",
     "lib/**/*",
