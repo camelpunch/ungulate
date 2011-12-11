@@ -11,13 +11,24 @@ module Ungulate
 
     def create(blob, instructions)
       image = processed_image(magick_image_from_blob(blob), instructions)
+
       {
-        :blob => image.to_blob,
+        :blob => finished_blob_from(image),
         :content_type => MIME::Types.type_for(image.format).to_s.gsub(/[\[\]]/, '')
       }
     end
 
     protected
+
+    def finished_blob_from(image)
+      attributes = @write_attributes
+
+      if attributes && image.format.include?('JPEG')
+        image.to_blob { attributes.each_pair {|k, v| send("#{k}=", v.to_i) } }
+      else
+        image.to_blob
+      end
+    end
 
     def blob_from_url(url)
       @blobs_from_urls ||= {}
@@ -42,6 +53,9 @@ module Ungulate
 
     def image_from_instruction(original, instruction)
       method, *args = instruction
+
+      @write_attributes = args.pop if args.last.is_a?(Hash)
+
       send_args = instruction_args(args)
 
       @logger.info "Performing #{method} with #{args.join(', ')}"

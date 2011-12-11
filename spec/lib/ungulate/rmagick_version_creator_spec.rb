@@ -9,11 +9,11 @@ describe Ungulate::RmagickVersionCreator do
 
   let(:http) { double 'http' }
 
+  let(:new_blob) { subject.create(original, instructions)[:blob] }
+
   shared_examples_for "an image converter" do
     it "creates a matching blob" do
-      new_blob = subject.create(original, instructions)[:blob]
-
-      expected_image = Magick::Image.from_blob(converted).first
+      expected_image = Magick::Image.from_blob(comparison).first
       got_image = Magick::Image.from_blob(new_blob).first
 
       expected_image.difference(got_image)
@@ -49,15 +49,42 @@ describe Ungulate::RmagickVersionCreator do
 
   context "resize to fill only" do
     let(:original) { fixture 'chuckle.png' }
-    let(:converted) { fixture 'chuckle_thumbnail.png' }
+    let(:comparison) { fixture 'chuckle_thumbnail.png' }
     let(:instructions) { [ :resize_to_fill, 80, 80 ] }
     it_behaves_like "an image converter"
+  end
+
+  context "JPEG quality setting" do
+    let(:original) { fixture 'sofa.jpg' }
+
+    def blob_of_quality(quality)
+      subject.create(
+        original,
+        [ :resize_to_fit, 100, 200, { :quality => quality.to_s } ]
+      )[:blob]
+    end
+
+    it "produces a smaller file when reduced" do
+      blob_of_quality(74).size.should < blob_of_quality(75).size
+    end
+
+    it "produces the same sized file when the same" do
+      blob_of_quality(75).size.should == blob_of_quality(75).size
+    end
+
+    context "when source image is a PNG" do
+      let(:original) { fixture 'chuckle.png' }
+
+      it "does not change the file size when reduced" do
+        blob_of_quality(1).size.should == blob_of_quality(75).size
+      end
+    end
   end
 
   context "resize to fit and then composite" do
     let(:url) { "https://some/watermark.png" }
     let(:original) { fixture 'chuckle.png' }
-    let(:converted) { fixture 'chuckle_converted.png' }
+    let(:comparison) { fixture 'chuckle_converted.png' }
     let(:bad) { fixture 'chuckle_converted_badly.png' }
 
     let(:instructions) do
@@ -74,7 +101,6 @@ describe Ungulate::RmagickVersionCreator do
     it_behaves_like "an image converter"
 
     it "doesn't compare well with a broken image" do
-      new_blob = subject.create(original, instructions)[:blob]
       got_image = Magick::Image.from_blob(new_blob).first
       bad_image = Magick::Image.from_blob(bad).first
 

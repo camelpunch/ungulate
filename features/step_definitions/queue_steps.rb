@@ -6,8 +6,13 @@ Given /^a request to resize "([^\"]*)" to sizes:$/ do |key, table|
   put key, File.open('features/camels.jpg').read
 
   versions = table.rows.inject({}) do |hash, row|
-    label, width, height = row
-    hash[label] = [:resize_to_fit, width, height]
+    label, width, height, quality = row
+    hash[label] =
+      if quality
+        [ :resize_to_fit, width, height, { :quality => quality } ]
+      else
+        [ :resize_to_fit, width, height ]
+      end
     hash
   end
 
