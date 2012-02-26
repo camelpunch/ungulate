@@ -3,3 +3,6 @@ rvm:
   - 1.9.2
   - ree
 script: "rake ci"
+branches:
+  only:
+    - master
