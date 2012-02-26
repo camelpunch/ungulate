@@ -18,11 +18,6 @@ describe Ungulate::RmagickVersionCreator do
 
       expected_image.difference(got_image)
 
-      puts "good image:"
-      puts "mean per pixel: #{expected_image.mean_error_per_pixel}"
-      puts "normalized mean: #{expected_image.normalized_mean_error}"
-      puts "normalized max: #{expected_image.normalized_maximum_error}"
-
       expected_image.mean_error_per_pixel.round.should be_zero
       expected_image.normalized_maximum_error.round.should be_zero
 
@@ -105,11 +100,6 @@ describe Ungulate::RmagickVersionCreator do
       bad_image = Magick::Image.from_blob(bad).first
 
       bad_image.difference(got_image)
-
-      puts "bad image:"
-      puts "mean per pixel: #{bad_image.mean_error_per_pixel}"
-      puts "normalized mean: #{bad_image.normalized_mean_error}"
-      puts "normalized max: #{bad_image.normalized_maximum_error}"
 
       bad_image.mean_error_per_pixel.round.should > 0
       bad_image.normalized_maximum_error.round.should > 0
