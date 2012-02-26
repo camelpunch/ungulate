@@ -47,11 +47,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency('sinatra', [">= 1.3.1"])
   gem.add_development_dependency('launchy', [">= 2.0.5"])
   gem.add_development_dependency('actionpack', [">= 3.1.1"])
-
-  if RUBY_VERSION =~ /^1.9/
-    gem.add_development_dependency('ruby-debug19')
-  else
-    gem.add_development_dependency('ruby-debug')
-  end
 end
 
