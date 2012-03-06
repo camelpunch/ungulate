@@ -18,7 +18,7 @@ module Ungulate
       }
     end
 
-    protected
+    private
 
     def finished_blob_from(image)
       attributes = @write_attributes

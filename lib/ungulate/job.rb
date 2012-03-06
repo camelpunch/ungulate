@@ -29,7 +29,7 @@ module Ungulate
       end
     end
 
-    protected
+    private
 
     def stored_versions
       @stored_versions ||= Set.new
