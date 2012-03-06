@@ -6,10 +6,9 @@ describe Ungulate::BlobProcessor do
 
   let(:creator) { double 'version creator' }
   let(:bucket) { double 'bucket' }
+  let(:blob) { 'asdf' }
 
   it "processes a blob into several versions and sends them to storage" do
-    blob = 'asdf'
-
     large = [
       [ :resize_to_fill, 400, 300 ],
       [ :composite, 'http://some.image/url.jpg', :center_gravity, :soft_light_composite_op ],
@@ -56,10 +55,9 @@ describe Ungulate::BlobProcessor do
 
       bucket.should_receive(:store).with('file_large.jpg', anything, anything)
 
-      subject.process(
-        :blob => 'asdf', :versions => { :large => [] },
-        :original_key => 'file.jpg', :bucket => bucket
-      )
+      subject.process(:original_key => 'file.jpg',
+                      :blob => blob, :versions => { :large => [] },
+                      :bucket => bucket)
     end
   end
 end

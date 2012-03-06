@@ -13,14 +13,14 @@ module Ungulate
       image = processed_image(magick_image_from_blob(blob), instructions)
 
       {
-        :blob => finished_blob_from(image),
+        :blob => finished_blob_from_image(image),
         :content_type => MIME::Types.type_for(image.format).to_s.gsub(/[\[\]]/, '')
       }
     end
 
     private
 
-    def finished_blob_from(image)
+    def finished_blob_from_image(image)
       attributes = @write_attributes
 
       if attributes && image.format.include?('JPEG')

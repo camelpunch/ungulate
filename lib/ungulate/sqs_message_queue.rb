@@ -55,9 +55,14 @@ module Ungulate
     end
 
     def size
-      data = @sqs.get_queue_attributes(@queue_url, 'All').body['Attributes']
-      data['ApproximateNumberOfMessages'].
-        try(:+, data['ApproximateNumberOfMessagesNotVisible'])
+      attributes['ApproximateNumberOfMessages'].
+        try(:+, attributes['ApproximateNumberOfMessagesNotVisible'])
+    end
+
+    private
+
+    def attributes
+      @sqs.get_queue_attributes(@queue_url, 'All').body['Attributes']
     end
   end
 end
