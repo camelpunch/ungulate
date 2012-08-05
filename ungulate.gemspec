@@ -40,7 +40,7 @@ Gem::Specification.new do |gem|
   gem.add_runtime_dependency('mime-types', [">= 1.16"])
   gem.add_runtime_dependency('hashie', [">= 1.2.0"])
   gem.add_development_dependency('rake')
-  gem.add_development_dependency('rspec', [">= 2.4.0"])
+  gem.add_development_dependency('rspec', [">= 2.11.0"])
   gem.add_development_dependency('cucumber', [">= 1.1.1"])
   gem.add_development_dependency('i18n', [">= 0.5.0"])
   gem.add_development_dependency('capybara', [">= 1.1.1"])
