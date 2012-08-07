@@ -10,7 +10,7 @@ module Ungulate
         queue.push(job_description.to_yaml)
       end
 
-      protected
+      private
 
       def queue
         @queue ||= Ungulate.configuration.queue.call
@@ -49,7 +49,7 @@ module Ungulate
       )).gsub("\n", '')
     end
 
-    protected
+    private
 
     def config
       Ungulate.configuration
