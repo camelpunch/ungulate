@@ -7,15 +7,20 @@ describe Ungulate::Server do
                          :logger => ::Logger.new(nil))
   end
 
-  let(:processor) { double 'job processor' }
+  let(:processor) { double 'job processor', :process => nil }
   let(:queue_name) { 'queuename' }
-  let(:queue) { double 'queue', :name => 'Some Queue' }
-  let(:message) { double 'message', :to_s => '' }
+  let(:queue) { double 'queue', :name => 'Some Queue', :receive => message }
+  let(:message) { double 'message', :to_s => '', :delete => nil }
 
-  it "receives a message from the provided queue and processes it with the processor" do
-    queue.should_receive(:receive).ordered.and_return(message)
-    message.should_receive(:to_s).and_return('job description')
-    processor.should_receive(:process).with('job description').ordered
+  it "processes messages with the provided processor" do
+    message.stub(:to_s).and_return('job description')
+    processor.should_receive(:process).with('job description')
+
+    subject.run
+  end
+
+  it "deletes messages after processing" do
+    processor.stub(:process).ordered
     message.should_receive(:delete).ordered
 
     subject.run
