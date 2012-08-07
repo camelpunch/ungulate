@@ -4,6 +4,8 @@ require 'active_support/core_ext/numeric/time'
 require 'active_support/values/time_zone'
 
 describe Ungulate::FileUpload do
+  subject(:file_upload) { Ungulate::FileUpload.new }
+
   let(:california_offset) { -(8 / 24.0) }
   let(:utc_offset) { 0 }
   let(:expiration) { DateTime.new(2011, 11, 2, 12, 0, 0, california_offset) }
@@ -42,11 +44,11 @@ describe Ungulate::FileUpload do
   end
 
   it "allows reading of the configured Amazon Access Key ID" do
-    subject.should have_reader_for :access_key_id
+    file_upload.should have_reader_for :access_key_id
   end
 
   context "when attributes set in constructor" do
-    subject do
+    subject(:file_upload) do
       Ungulate::FileUpload.new(
         :bucket_url => bucket_url,
         :policy => input_policy,
@@ -60,12 +62,12 @@ describe Ungulate::FileUpload do
     it { should have_reader_for :success_action_redirect }
 
     it "converts expiration to UTC" do
-      decoded_policy = ActiveSupport::JSON.decode(Base64.decode64(subject.policy))
+      decoded_policy = ActiveSupport::JSON.decode(Base64.decode64(file_upload.policy))
       decoded_policy['expiration'].should == expiration_utc.to_s
     end
 
     it "converts mixed-hash-and-array input conditions to a nested array" do
-      subject.conditions.should == [
+      file_upload.conditions.should == [
         ['bucket', 'johnsmith'],
         ['starts-with', '$key', 'user/eric/'],
         ['acl', 'public-read'],
@@ -81,7 +83,7 @@ describe Ungulate::FileUpload do
       ActiveSupport::JSON.should_receive(:encode).with(policy_utc).and_return(json)
       Base64.should_receive(:encode64).with(json).and_return("ENCODED\nLINE\nLINE")
 
-      subject.policy.should == "ENCODEDLINELINE"
+      file_upload.policy.should == "ENCODEDLINELINE"
     end
   end
 
@@ -99,14 +101,14 @@ describe Ungulate::FileUpload do
     let(:sha1) { stub 'SHA1' }
 
     before do
-      subject.stub(:policy).and_return(:policy)
+      file_upload.stub(:policy).and_return(:policy)
       OpenSSL::Digest::Digest.stub(:new).with('sha1').and_return(sha1)
       OpenSSL::HMAC.stub(:digest).with(sha1, secret_access_key, :policy).and_return(:digest)
       Base64.stub(:encode64).with(:digest).and_return("str\nipme\n")
     end
 
     it "returns the stripped base64 encoded digest" do
-      subject.signature.should == "stripme"
+      file_upload.signature.should == "stripme"
     end
   end
 end
