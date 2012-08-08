@@ -12,6 +12,8 @@ It comes with a few goodies:
 * Ungulate::FileUpload - a model for e.g. Rails that does some cryptography stuff - {examples in the docs}[https://github.com/camelpunch/ungulate/wiki/Examples]
 * A view helper for Rails: "ungulate_upload_form_for"
 
+Note that Ungulate::FileUpload has now been superseded by [https://github.com/amazonwebservices/aws-sdk-for-ruby/blob/master/lib/aws/s3/presigned_post.rb](the official Amazon SDK version)
+
 == Installation
 gem install ungulate
 
