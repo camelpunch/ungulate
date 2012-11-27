@@ -90,7 +90,7 @@ describe Ungulate::RmagickVersionCreator do
     end
 
     before do
-      http.should_receive(:get_body).with(url).and_return fixture('watermark.png')
+      http.should_receive(:get_body).with(url).and_return fixture('watermark_composite.png')
     end
 
     it_behaves_like "an image converter"
